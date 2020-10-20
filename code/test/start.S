@@ -162,6 +162,14 @@ ThreadJoin:
 	j 	$31
 	.end ThreadJoin
 
+	.globl Open
+	.ent Open
+Open:
+	addiu $2, $0, SC_Open
+	syscall
+	j $31
+	.end Open
+
 
 /* dummy function to keep gcc happy */
         .globl  __main
