@@ -105,7 +105,7 @@ void ExceptionHandler(ExceptionType which)
       break;
     case SC_Open:
       val = kernel->machine->ReadRegister(4);
-      
+
       {
         char *filename = &(kernel->machine->mainMemory[val]);
         //cout << filename << endl;

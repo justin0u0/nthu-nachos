@@ -40,8 +40,8 @@
 
 #define FILESYS_STUB
 
-#ifdef FILESYS_STUB // Temporarily implement file system calls as
-                    // calls to UNIX, until the real file system
+#ifdef FILESYS_STUB // Temporarily implement file system calls as \
+                    // calls to UNIX, until the real file system  \
                     // implementation is available
 typedef int OpenFileId;
 
@@ -73,36 +73,44 @@ public:
   }
 
   //  The OpenAFile function is used for kernel open system call
-    OpenFileId OpenAFile(char *name) {
-        int fileDescriptor = OpenForReadWrite(name, FALSE);
-        if (fileDescriptor == -1)
-            return -1;
-        for(int i=0; i<20; i++){
-            if(OpenFileTable[i] != NULL){
-                *OpenFileTable[i] = fileDescriptor;
-                return i;
-            }
-        }
-        return -1;
+  OpenFileId OpenAFile(char *name)
+  {
+    int fileDescriptor = OpenForReadWrite(name, FALSE);
+    if (fileDescriptor == -1)
+      return -1;
+    for (int i = 0; i < 20; i++)
+    {
+      if (OpenFileTable[i] != NULL)
+      {
+        *OpenFileTable[i] = fileDescriptor;
+        return i;
+      }
     }
-    int Write(char *buffer, int size, OpenFileId id){
-        OpenFile* fileDescriptor = OpenFileTable[id];
-        if(fileDescriptor == NULL){
-            return -1;
-        }
-        int bytes = fileDescriptor->Write(buffer, size);
-        return bytes;
+    return -1;
+  }
+  int Write(char *buffer, int size, OpenFileId id)
+  {
+    OpenFile *fileDescriptor = OpenFileTable[id];
+    if (fileDescriptor == NULL)
+    {
+      return -1;
     }
-    int Read(char *buffer, int size, OpenFileId id){
-    }
-    int Close(OpenFileId id){
-        if(OpenFileTable[id] == NULL){
-            return -1;
-        }
-        OpenFileTable[id] = NULL;
-        return 1;
-    }
+    int bytes = fileDescriptor->Write(buffer, size);
+    return bytes;
+  }
+  int Read(char *buffer, int size, OpenFileId id)
+  {
+  }
 
+  int Close(OpenFileId id)
+  {
+    if (OpenFileTable[id] == NULL)
+    {
+      return -1;
+    }
+    OpenFileTable[id] = NULL;
+    return 1;
+  }
 
   bool Remove(char *name) { return Unlink(name) == 0; }
 
@@ -132,8 +140,8 @@ public:
   void Print(); // List all the files and their contents
 
 private:
-  OpenFile *freeMapFile; // Bit map of free disk blocks,
-      // represented as a file
+  OpenFile *freeMapFile;   // Bit map of free disk blocks,
+                           // represented as a file
   OpenFile *directoryFile; // "Root" directory -- list of
                            // file names, represented as a file
 };
