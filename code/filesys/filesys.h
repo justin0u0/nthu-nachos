@@ -88,15 +88,27 @@ public:
     }
     return -1;
   }
+
   int Write(char *buffer, int size, OpenFileId id)
   {
-    OpenFile *fileDescriptor = OpenFileTable[id];
-    if (fileDescriptor == NULL)
+    OpenFile *openFile = OpenFileTable[id];
+    if (openFile == NULL)
     {
       return -1;
     }
-    int bytes = fileDescriptor->Write(buffer, size);
+    int bytes = openFile->Write(buffer, size);
     return bytes;
+  }
+
+  int Read(char *buffer, int size, OpenFileId id) {
+    OpenFile *openFile = OpenFileTable[id];
+    if (openFile == NULL)
+    {
+      return -1;
+    }
+
+    int result = openFile->Read(buffer, size);
+    return result;
   }
 
   int Close(OpenFileId id)

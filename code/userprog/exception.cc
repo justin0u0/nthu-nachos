@@ -132,6 +132,17 @@ void ExceptionHandler(ExceptionType which)
       return;
       ASSERTNOTREACHED();
       break;
+    case SC_Read:
+      val = kernel->machine->ReadRegister(4);
+      char *buffer = &(kernel->machine->mainMemory[val]);
+      numChar = SysRead(buffer, kernel->machine->ReadRegister(5), kernel->machine->ReadRegister(6));
+      kernel->machine->WriteRegister(2, (int)numChar);
+      kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+      kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      return;
+      ASSERTNOTREACHED();
+      break;
     case SC_Close:
       val = kernel->machine->ReadRegister(4);
       {

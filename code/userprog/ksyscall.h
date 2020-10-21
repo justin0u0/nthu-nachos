@@ -40,6 +40,10 @@ int SysCreate(char *filename)
   return kernel->fileSystem->Create(filename);
 }
 
+int SysRead(char *buffer, int size, int fd) {
+  return kernel->fileSystem->Read(buffer, size, fd);
+}
+
 int SysWrite(char *buffer, int size, int fd)
 {
   return kernel->fileSystem->Write(buffer, size, fd);
