@@ -94,7 +94,51 @@ void ExceptionHandler(ExceptionType which)
       {
         char *filename = &(kernel->machine->mainMemory[val]);
         //cout << filename << endl;
-        status = SysCreate(filename);
+        fileID = SysCreate(filename);
+        kernel->machine->WriteRegister(2, (int)fileID);
+      }
+      kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+      kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      return;
+      ASSERTNOTREACHED();
+      break;
+    case SC_Open:
+      val = kernel->machine->ReadRegister(4);
+      
+      {
+        char *filename = &(kernel->machine->mainMemory[val]);
+        //cout << filename << endl;
+        status = SysOpen(filename);
+        kernel->machine->WriteRegister(2, (int)status);
+      }
+      kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+      kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      return;
+      ASSERTNOTREACHED();
+      break;
+    case SC_Write:
+      val = kernel->machine->ReadRegister(4);
+      int size = kernel->machine->ReadRegister(5);
+      int fd = kernel->machine->ReadRegister(6);
+      {
+        char *buffer = &(kernel->machine->mainMemory[val]);
+        //cout << filename << endl;
+        status = SysWrite(buffer, size, fd);
+        kernel->machine->WriteRegister(2, (int)status);
+      }
+      kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+      kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+      return;
+      ASSERTNOTREACHED();
+      break;
+    case SC_Close:
+      val = kernel->machine->ReadRegister(4);
+      {
+        //cout << filename << endl;
+        status = SysClose(val);
         kernel->machine->WriteRegister(2, (int)status);
       }
       kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));

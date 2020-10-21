@@ -38,7 +38,7 @@
 #include "openfile.h"
 #include "debug.h" //just for test!!!
 
-// #define FILESYS_STUB
+#define FILESYS_STUB
 
 #ifdef FILESYS_STUB // Temporarily implement file system calls as
                     // calls to UNIX, until the real file system
@@ -73,15 +73,36 @@ public:
   }
 
   //  The OpenAFile function is used for kernel open system call
-  /*  OpenFileId OpenAFile(char *name) {
+    OpenFileId OpenAFile(char *name) {
+        int fileDescriptor = OpenForReadWrite(name, FALSE);
+        if (fileDescriptor == -1)
+            return -1;
+        for(int i=0; i<20; i++){
+            if(OpenFileTable[i] != NULL){
+                *OpenFileTable[i] = fileDescriptor;
+                return i;
+            }
+        }
+        return -1;
     }
-    int WriteFile(char *buffer, int size, OpenFileId id){
+    int Write(char *buffer, int size, OpenFileId id){
+        OpenFile* fileDescriptor = OpenFileTable[id];
+        if(fileDescriptor == NULL){
+            return -1;
+        }
+        int bytes = fileDescriptor->Write(buffer, size);
+        return bytes;
     }
-    int ReadFile(char *buffer, int size, OpenFileId id){
+    int Read(char *buffer, int size, OpenFileId id){
     }
-    int CloseFile(OpenFileId id){
+    int Close(OpenFileId id){
+        if(OpenFileTable[id] == NULL){
+            return -1;
+        }
+        OpenFileTable[id] = NULL;
+        return 1;
     }
-*/
+
 
   bool Remove(char *name) { return Unlink(name) == 0; }
 
