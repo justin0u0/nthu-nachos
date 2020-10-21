@@ -120,12 +120,10 @@ void ExceptionHandler(ExceptionType which)
       break;
     case SC_Write:
       val = kernel->machine->ReadRegister(4);
-      int size = kernel->machine->ReadRegister(5);
-      int fd = kernel->machine->ReadRegister(6);
       {
         char *buffer = &(kernel->machine->mainMemory[val]);
         //cout << filename << endl;
-        status = SysWrite(buffer, size, fd);
+        status = SysWrite(buffer, kernel->machine->ReadRegister(5), kernel->machine->ReadRegister(6));
         kernel->machine->WriteRegister(2, (int)status);
       }
       kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));

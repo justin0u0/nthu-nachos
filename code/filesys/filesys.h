@@ -98,9 +98,6 @@ public:
     int bytes = fileDescriptor->Write(buffer, size);
     return bytes;
   }
-  int Read(char *buffer, int size, OpenFileId id)
-  {
-  }
 
   int Close(OpenFileId id)
   {
