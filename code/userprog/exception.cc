@@ -93,7 +93,7 @@ void ExceptionHandler(ExceptionType which)
       val = kernel->machine->ReadRegister(4);
       {
         char *filename = &(kernel->machine->mainMemory[val]);
-        //cout << filename << endl;
+        // cout << filename << endl;
         fileID = SysCreate(filename);
         kernel->machine->WriteRegister(2, (int)fileID);
       }

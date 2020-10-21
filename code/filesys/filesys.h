@@ -80,9 +80,9 @@ public:
       return -1;
     for (int i = 0; i < 20; i++)
     {
-      if (OpenFileTable[i] != NULL)
+      if (OpenFileTable[i] == NULL)
       {
-        *OpenFileTable[i] = fileDescriptor;
+        OpenFileTable[i] = new OpenFile(fileDescriptor);
         return i;
       }
     }
