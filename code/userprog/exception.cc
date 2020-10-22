@@ -109,8 +109,8 @@ void ExceptionHandler(ExceptionType which)
       {
         char *filename = &(kernel->machine->mainMemory[val]);
         //cout << filename << endl;
-        status = SysOpen(filename);
-        kernel->machine->WriteRegister(2, (int)status);
+        fileID = SysOpen(filename);
+        kernel->machine->WriteRegister(2, (int)fileID);
       }
       kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
       kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
