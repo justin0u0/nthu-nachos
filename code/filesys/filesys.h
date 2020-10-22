@@ -91,6 +91,7 @@ public:
 
   int Write(char *buffer, int size, OpenFileId id)
   {
+    if (id < 0 || id >= 20) return -1;
     OpenFile *openFile = OpenFileTable[id];
     if (openFile == NULL)
     {
@@ -101,6 +102,7 @@ public:
   }
 
   int Read(char *buffer, int size, OpenFileId id) {
+    if (id < 0 || id >= 20) return -1;
     OpenFile *openFile = OpenFileTable[id];
     if (openFile == NULL)
     {
@@ -113,10 +115,8 @@ public:
 
   int Close(OpenFileId id)
   {
-    if (OpenFileTable[id] == NULL)
-    {
-      return -1;
-    }
+    if (id < 0 || id >= 20) return -1;
+    if (OpenFileTable[id] == NULL) return -1;
     OpenFileTable[id] = NULL;
     return 1;
   }
