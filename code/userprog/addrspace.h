@@ -48,6 +48,10 @@ class AddrSpace {
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
 
+    // static variable in class -> Global variable that only the class can use
+    static bool isPhyPageUsed[NumPhysPages];
+    static int numFreePages;
+
 };
 
 #endif // ADDRSPACE_H
