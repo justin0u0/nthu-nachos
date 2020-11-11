@@ -74,6 +74,11 @@ AddrSpace::AddrSpace() {
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace() {
+  for (int i = 0; i < numPages; i++) {
+    int idx = pageTable[i].physicalPage; 
+    AddrSpace::isPhyPageUsed[idx] = false;
+    AddrSpace::numFreePages++;
+  }
   delete pageTable;
 }
 
@@ -117,10 +122,23 @@ bool AddrSpace::Load(char *fileName) {
   numPages = divRoundUp(size, PageSize);
   size = numPages * PageSize;
 
-  ASSERT(numPages <= NumPhysPages);  // check we're not trying
-                                     // to run anything too big --
-                                     // at least until we have
-                                     // virtual memory
+  ASSERT(numPages <= numFreePages); // Check if the free pysical pages <= numPages
+
+  pageTable = new TranslationEntry[numPages];
+
+  for (int i = 0; i < numPages; i++) {
+    int idx = 0;
+    while (idx < NumPhysPages && isPhyPageUsed[idx]) idx++;
+    AddrSpace::isPhyPageUsed[idx] = true;
+    AddrSpace::numFreePages--;
+    pageTable[i].virtualPage = i;
+    pageTable[i].physicalPage = idx;
+    pageTable[i].valid = true;
+    pageTable[i].use = false;
+    pageTable[i].dirty = false;
+    pageTable[i].readOnly = false;
+    bzero(&kernel->machine->mainMemory[idx * PageSize], PageSize);
+  }
 
   DEBUG(dbgAddr, "Initializing address space: " << numPages << ", " << size);
 
@@ -129,16 +147,14 @@ bool AddrSpace::Load(char *fileName) {
   if (noffH.code.size > 0) {
     DEBUG(dbgAddr, "Initializing code segment.");
     DEBUG(dbgAddr, noffH.code.virtualAddr << ", " << noffH.code.size);
-    executable->ReadAt(
-        &(kernel->machine->mainMemory[noffH.code.virtualAddr]),
-        noffH.code.size, noffH.code.inFileAddr);
+    int physicalAddress = pageTable[noffH.code.virtualAddr / PageSize].physicalPage * PageSize + (noffH.code.virtualAddr % PageSize);
+    executable->ReadAt(&(kernel->machine->mainMemory[physicalAddress]), noffH.code.size, noffH.code.inFileAddr);
   }
   if (noffH.initData.size > 0) {
     DEBUG(dbgAddr, "Initializing data segment.");
     DEBUG(dbgAddr, noffH.initData.virtualAddr << ", " << noffH.initData.size);
-    executable->ReadAt(
-        &(kernel->machine->mainMemory[noffH.initData.virtualAddr]),
-        noffH.initData.size, noffH.initData.inFileAddr);
+    int physicalAddress = pageTable[noffH.initData.virtualAddr / PageSize].physicalPage * PageSize + (noffH.initData.virtualAddr % PageSize);
+    executable->ReadAt(&(kernel->machine->mainMemory[physicalAddress]), noffH.initData.size, noffH.initData.inFileAddr);
   }
 
 #ifdef RDATA
