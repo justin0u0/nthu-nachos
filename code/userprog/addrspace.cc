@@ -65,10 +65,7 @@ SwapHeader(NoffHeader *noffH) {
 //	only uniprogramming, and we have a single unsegmented page table
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace(bool* phyPageUsed, int* freePages) {
-    isPhyPageUsed = phyPageUsed;
-    numFreePages = freePages;
-}
+AddrSpace::AddrSpace() {}
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
@@ -78,8 +75,8 @@ AddrSpace::AddrSpace(bool* phyPageUsed, int* freePages) {
 AddrSpace::~AddrSpace() {
   for (int i = 0; i < numPages; i++) {
     int idx = pageTable[i].physicalPage; 
-    AddrSpace::isPhyPageUsed[idx] = false;
-    AddrSpace::numFreePages++;
+    kernel->isPhyPageUsed[idx] = false;
+    kernel->numFreePages++;
   }
   delete pageTable;
 }
@@ -124,15 +121,15 @@ bool AddrSpace::Load(char *fileName) {
   numPages = divRoundUp(size, PageSize);
   size = numPages * PageSize;
 
-  ASSERT(numPages <= *numFreePages); // Check if the free pysical pages <= numPages
+  ASSERT(numPages <= kernel->numFreePages); // Check if the free pysical pages <= numPages
 
   pageTable = new TranslationEntry[numPages];
 
   for (int i = 0; i < numPages; i++) {
     int idx = 0;
-    while (idx < NumPhysPages && isPhyPageUsed[idx]) idx++;
-    isPhyPageUsed[idx] = true;
-    *numFreePages = *numFreePages-1;
+    while (idx < NumPhysPages && kernel->isPhyPageUsed[idx]) idx++;
+    kernel->isPhyPageUsed[idx] = true;
+    kernel->numFreePages--;
     pageTable[i].virtualPage = i;
     pageTable[i].physicalPage = idx;
     pageTable[i].valid = true;

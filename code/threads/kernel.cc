@@ -26,8 +26,11 @@
 //----------------------------------------------------------------------
 
 Kernel::Kernel(int argc, char **argv) {
-  isPhyPageUsed[NumPhysPages] = {false}; // initialize
-  numFreePages = NumPhysPages; // initialize
+  numFreePages = NumPhysPages;
+  for (int i = 0; i < NumPhysPages; i++) {
+    // default not used
+    isPhyPageUsed[i] = false;
+  }
 
   randomSlice = FALSE;
   debugUserProg = FALSE;
@@ -259,7 +262,7 @@ void Kernel::ExecAll() {
 
 int Kernel::Exec(char *name) {
   t[threadNum] = new Thread(name, threadNum);
-  t[threadNum]->space = new AddrSpace(isPhyPageUsed, &numFreePages);
+  t[threadNum]->space = new AddrSpace();
   t[threadNum]->Fork((VoidFunctionPtr)&ForkExecute, (void *)t[threadNum]);
   threadNum++;
 
