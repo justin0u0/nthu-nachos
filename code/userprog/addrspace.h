@@ -21,7 +21,7 @@
 
 class AddrSpace {
   public:
-    AddrSpace();			// Create an address space.
+    AddrSpace(bool*, int*);			// Create an address space.
     ~AddrSpace();			// De-allocate an address space
 
     bool Load(char *fileName);		// Load a program into addr space from
@@ -49,9 +49,8 @@ class AddrSpace {
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
 
-    // static variable in class -> Global variable that only the class can use
-    static bool isPhyPageUsed[NumPhysPages];
-    static int numFreePages;
+    bool *isPhyPageUsed;
+    int *numFreePages;
 
 };
 

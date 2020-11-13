@@ -54,8 +54,8 @@ SwapHeader(NoffHeader *noffH) {
 #endif
 }
 
-bool AddrSpace::isPhyPageUsed[NumPhysPages] = {false};
-int AddrSpace::numFreePages = NumPhysPages;
+// bool AddrSpace::isPhyPageUsed[NumPhysPages] = {false};
+// int AddrSpace::numFreePages = NumPhysPages;
 
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
@@ -65,7 +65,9 @@ int AddrSpace::numFreePages = NumPhysPages;
 //	only uniprogramming, and we have a single unsegmented page table
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace() {
+AddrSpace::AddrSpace(bool* phyPageUsed, int* freePages) {
+    isPhyPageUsed = phyPageUsed;
+    numFreePages = freePages;
 }
 
 //----------------------------------------------------------------------
@@ -122,15 +124,15 @@ bool AddrSpace::Load(char *fileName) {
   numPages = divRoundUp(size, PageSize);
   size = numPages * PageSize;
 
-  ASSERT(numPages <= numFreePages); // Check if the free pysical pages <= numPages
+  ASSERT(numPages <= *numFreePages); // Check if the free pysical pages <= numPages
 
   pageTable = new TranslationEntry[numPages];
 
   for (int i = 0; i < numPages; i++) {
     int idx = 0;
     while (idx < NumPhysPages && isPhyPageUsed[idx]) idx++;
-    AddrSpace::isPhyPageUsed[idx] = true;
-    AddrSpace::numFreePages--;
+    isPhyPageUsed[idx] = true;
+    *numFreePages = *numFreePages-1;
     pageTable[i].virtualPage = i;
     pageTable[i].physicalPage = idx;
     pageTable[i].valid = true;

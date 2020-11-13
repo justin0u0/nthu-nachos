@@ -81,6 +81,8 @@ private:
   double reliability; // likelihood messages are dropped
   char *consoleIn;    // file to read console input from
   char *consoleOut;   // file to send console output to
+  bool isPhyPageUsed[NumPhysPages];
+  int numFreePages;
 #ifndef FILESYS_STUB
   bool formatFlag; // format the disk if this is true
 #endif
