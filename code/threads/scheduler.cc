@@ -24,6 +24,10 @@
 #include "debug.h"
 #include "main.h"
 
+int PriorityCompare(Thread *t1, Thread *t2) {
+  return t1->getPriority() - t2->getPriority();
+}
+
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
 // 	Initialize the list of ready but not running threads.
@@ -31,7 +35,8 @@
 //----------------------------------------------------------------------
 
 Scheduler::Scheduler() {
-  readyList = new List<Thread *>;
+  l2Queue = new SortedList<Thread *>(PriorityCompare);
+  l3Queue = new List<Thread *>;
   toBeDestroyed = NULL;
 }
 
@@ -41,7 +46,7 @@ Scheduler::Scheduler() {
 //----------------------------------------------------------------------
 
 Scheduler::~Scheduler() {
-  delete readyList;
+  delete l3Queue;
 }
 
 //----------------------------------------------------------------------
@@ -57,7 +62,7 @@ void Scheduler::ReadyToRun(Thread *thread) {
   DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName());
   //cout << "Putting thread on ready list: " << thread->getName() << endl ;
   thread->setStatus(READY);
-  readyList->Append(thread);
+  l3Queue->Append(thread);
 }
 
 //----------------------------------------------------------------------
@@ -72,10 +77,10 @@ Thread *
 Scheduler::FindNextToRun() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
-  if (readyList->IsEmpty()) {
+  if (l3Queue->IsEmpty()) {
     return NULL;
   } else {
-    return readyList->RemoveFront();
+    return l3Queue->RemoveFront();
   }
 }
 
@@ -165,5 +170,5 @@ void Scheduler::CheckToBeDestroyed() {
 //----------------------------------------------------------------------
 void Scheduler::Print() {
   cout << "Ready list contents:\n";
-  readyList->Apply(ThreadPrint);
+  l3Queue->Apply(ThreadPrint);
 }

@@ -105,6 +105,13 @@ class Thread {
   char *getName() { return (name); }
 
   int getID() { return (ID); }
+
+  int getPriority() { return priority; }
+  int setProiroty(int p) {
+    ASSERT(p >= 0 && p < 150);
+    priority = p;
+  }
+
   void Print() { cout << name; }
   void SelfTest();  // test whether thread impl is working
 
