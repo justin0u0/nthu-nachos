@@ -49,7 +49,7 @@ void Alarm::CallBack() {
 
   kernel->scheduler->AgingProcess();
 
-  if (status != IdleMode) {
+  if (status != IdleMode && kernel->scheduler->CheckIfYield()) {
     interrupt->YieldOnReturn();
   }
 }

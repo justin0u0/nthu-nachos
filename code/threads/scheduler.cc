@@ -185,7 +185,6 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
 // 	before now (for example, in Thread::Finish()), because up to this
 // 	point, we were still running on the old thread's stack!
 //----------------------------------------------------------------------
-
 void Scheduler::CheckToBeDestroyed() {
   if (toBeDestroyed != NULL) {
     delete toBeDestroyed;
@@ -205,6 +204,11 @@ void Scheduler::Print() {
   l3Queue->Apply(ThreadPrint);
 }
 
+
+//----------------------------------------------------------------------
+// Scheduler::AgingProcess
+// 	Increase priority if thread in ready list over 1500 ticks
+//----------------------------------------------------------------------
 void Scheduler::AgingProcess() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
@@ -267,4 +271,23 @@ void Scheduler::AgingProcess() {
   l2Queue = newL2Queue;
   delete l3Queue;
   l3Queue = newL3Queue;
+}
+
+bool Scheduler::CheckIfYield() {
+  ASSERT(kernel->interrupt->getLevel() == IntOff);
+
+  Thread *t = kernel->currentThread;
+  // Switch next thread if current thread is l2, l3, or current thread is L1 but longer burst time
+  if (!l1Queue->IsEmpty()) {
+    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getBurstTime() > l1Queue->Front()->getBurstTime()));
+  }
+
+  // Switch next thread if current thread is L3
+  if (!l2Queue->IsEmpty()) {
+    return (t->getPriority() < 50);
+  }
+
+  // Scheduler::CheckIfYield is called in Alarm::Callback and L3 is RR algorithm,
+  // so if L3 is not empty, switch to next thread
+  return (!l3Queue->IsEmpty());
 }

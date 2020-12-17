@@ -34,6 +34,8 @@ class Scheduler {
 
     void AgingProcess(); // Update ageTick of all threads
 
+    bool CheckIfYield(); // Check if current thread yield
+
     // SelfTest for scheduler is implemented in class Thread
     
   private:
