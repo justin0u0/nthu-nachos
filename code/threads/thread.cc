@@ -236,6 +236,15 @@ void Thread::Sleep(bool finishing) {
   DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
   status = BLOCKED;
+
+  // Current thread running -> waiting
+  // update burst time
+  double oldBurstTime = this->burstTime;
+  double interval = kernel->stats->totalTicks - this->startTick;
+  this->setBurstTime(0.5 * this->burstTime + 0.5 * interval);
+  DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << this->ID
+    << " update approximate burst time, from " << oldBurstTime << ", add " << interval << ", to " << this->burstTime);
+
   //cout << "debug Thread::Sleep " << name << "wait for Idle\n";
   while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {
     kernel->interrupt->Idle();  // no one to run, wait for an interrupt

@@ -103,19 +103,15 @@ class Thread {
   void setStatus(ThreadStatus st) { status = st; }
   ThreadStatus getStatus() { return (status); }
   char *getName() { return (name); }
-
   int getID() { return (ID); }
-
   int getPriority() { return priority; }
   void setProiroty(int threadPriority) {
     ASSERT(threadPriority >= 0 && threadPriority < 150);
     priority = threadPriority;
   }
-
   double getBurstTime() { return burstTime; }
-  void setBurstTime(double threadBurstTime) {
-    burstTime = threadBurstTime;
-  }
+  void setBurstTime(double threadBurstTime) { burstTime = threadBurstTime; }
+  void setStartTick(int tick) { startTick = tick; }
 
   void Print() { cout << name; }
   void SelfTest();  // test whether thread impl is working
@@ -142,6 +138,7 @@ class Thread {
   // For scheduling
   int priority;
   double burstTime;
+  int startTick;
 
  public:
   void SaveUserState();     // save user-level register state

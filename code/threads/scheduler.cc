@@ -73,13 +73,13 @@ void Scheduler::ReadyToRun(Thread *thread) {
 
   if (thread->getPriority() < 50) {
     l3Queue->Append(thread);
-    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
+    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
   } else if (thread->getPriority() < 100) {
     l2Queue->Insert(thread);
-    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
+    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
   } else { // thread->getPriority() < 150
     l1Queue->Insert(thread);
-    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
+    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
   }
 }
 
@@ -94,11 +94,19 @@ void Scheduler::ReadyToRun(Thread *thread) {
 Thread* Scheduler::FindNextToRun() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
-  if (l3Queue->IsEmpty()) {
-    return NULL;
-  } else {
+  if (!l1Queue->IsEmpty()) {
+    return l1Queue->RemoveFront();
+  }
+
+  if (!l2Queue->IsEmpty()) {
+    return l2Queue->RemoveFront();
+  }
+
+  if (!l3Queue->IsEmpty()) {
     return l3Queue->RemoveFront();
   }
+
+  return NULL;
 }
 
 //----------------------------------------------------------------------
@@ -146,9 +154,13 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
   // a bit to figure out what happens after this, both from the point
   // of view of the thread and from the perspective of the "outside world".
 
+  // nextThread start
+  nextThread->setStartTick(kernel->stats->totalTicks);
+
   SWITCH(oldThread, nextThread);
 
   // we're back, running oldThread
+  oldThread->setStartTick(kernel->stats->totalTicks);
 
   // interrupts are off when we return from switch!
   ASSERT(kernel->interrupt->getLevel() == IntOff);
