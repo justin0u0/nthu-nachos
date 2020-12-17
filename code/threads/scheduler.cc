@@ -74,13 +74,13 @@ void Scheduler::ReadyToRun(Thread *thread) {
 
   if (thread->getPriority() < 50) {
     l3Queue->Append(thread);
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
+    DEBUG(dbgScheduler, "[A] Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L3");
   } else if (thread->getPriority() < 100) {
     l2Queue->Insert(thread);
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
+    DEBUG(dbgScheduler, "[A] Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L2");
   } else { // thread->getPriority() < 150
     l1Queue->Insert(thread);
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
+    DEBUG(dbgScheduler, "[A] Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L1");
   }
 }
 
@@ -96,17 +96,17 @@ Thread* Scheduler::FindNextToRun() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
   if (!l1Queue->IsEmpty()) {
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << l1Queue->Front()->getID() << " is removed from queue L1");
+    DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L1");
     return l1Queue->RemoveFront();
   }
 
   if (!l2Queue->IsEmpty()) {
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << l2Queue->Front()->getID() << " is removed from queue L2");
+    DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l2Queue->Front()->getID() << "] is removed from queue L2");
     return l2Queue->RemoveFront();
   }
 
   if (!l3Queue->IsEmpty()) {
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << l3Queue->Front()->getID() << " is removed from queue L3");
+    DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l3Queue->Front()->getID() << "] is removed from queue L3");
     return l3Queue->RemoveFront();
   }
 
@@ -152,9 +152,9 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
   nextThread->setStatus(RUNNING);      // nextThread is now running
 
   DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
-  DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << nextThread->getID()
-    << " is now selected for execution, thread " << oldThread->getID() << " is replaced, and it has executed "
-    << kernel->stats->totalTicks - oldThread->getStartTick() << " ticks");
+  DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID()
+    << "] is now selected for execution, thread [" << oldThread->getID() << "] is replaced, and it has executed ["
+    << kernel->stats->totalTicks - oldThread->getStartTick() << "] ticks");
 
   // This is a machine-dependent assembly language routine defined
   // in switch.s.  You may have to think
@@ -229,12 +229,12 @@ void Scheduler::AgingProcess() {
     Thread* t = iterator->Item();
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
       if (t->getPriority() + 10 >= 150) {
-        DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
-          << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << 149);
+        DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+          << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << 149 << "]");
         t->setPriority(149);
       } else {
-        DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
-          << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << t->getPriority() + 10);
+        DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+          << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << t->getPriority() + 10 << "]");
         t->setPriority(t->getPriority() + 10);
       }
       t->setAgeTick(kernel->stats->totalTicks + 1500);
@@ -247,8 +247,8 @@ void Scheduler::AgingProcess() {
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
-      DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
-        << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << t->getPriority() + 10);
+      DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+        << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << t->getPriority() + 10 << "]");
       t->setPriority(t->getPriority() + 10);
       t->setAgeTick(kernel->stats->totalTicks + 1500);
       if (t->getPriority() >= 100) {
@@ -266,8 +266,8 @@ void Scheduler::AgingProcess() {
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
-      DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
-        << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << t->getPriority() + 10);
+      DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+        << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << t->getPriority() + 10 << "]");
       t->setPriority(t->getPriority() + 10);
       t->setAgeTick(kernel->stats->totalTicks + 1500);
       if (t->getPriority() >= 50) {
