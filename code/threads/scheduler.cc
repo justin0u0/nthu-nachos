@@ -51,6 +51,8 @@ Scheduler::Scheduler() {
 //----------------------------------------------------------------------
 
 Scheduler::~Scheduler() {
+  delete l1Queue;
+  delete l2Queue;
   delete l3Queue;
 }
 
@@ -66,8 +68,19 @@ void Scheduler::ReadyToRun(Thread *thread) {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
   DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName());
   //cout << "Putting thread on ready list: " << thread->getName() << endl ;
+
   thread->setStatus(READY);
-  l3Queue->Append(thread);
+
+  if (thread->getPriority() < 50) {
+    l3Queue->Append(thread);
+    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << "is inserted into queue L3");
+  } else if (thread->getPriority() < 100) {
+    l2Queue->Insert(thread);
+    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << "is inserted into queue L2");
+  } else { // thread->getPriority() < 150
+    l1Queue->Insert(thread);
+    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << "is inserted into queue L1");
+  }
 }
 
 //----------------------------------------------------------------------
@@ -78,8 +91,7 @@ void Scheduler::ReadyToRun(Thread *thread) {
 //	Thread is removed from the ready list.
 //----------------------------------------------------------------------
 
-Thread *
-Scheduler::FindNextToRun() {
+Thread* Scheduler::FindNextToRun() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
   if (l3Queue->IsEmpty()) {
