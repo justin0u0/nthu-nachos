@@ -243,7 +243,7 @@ void Thread::Sleep(bool finishing) {
   // update burst time
   this->burstTime += kernel->stats->totalTicks - this->startTick;
   double oldPredictedBurstTime = this->predictedBurstTime;
-  this->setPredictedBurstTime(0.5 * this->predictedBurstTime + 0.5 * this->burstTime);
+  this->predictedBurstTime = 0.5 * this->predictedBurstTime + 0.5 * this->burstTime;
   DEBUG(dbgScheduler, "[D] Tick [" << kernel->stats->totalTicks << "]: Thread [" << this->ID
     << "] update approximate burst time, from [" << oldPredictedBurstTime << "], add [" << this->burstTime << "], to [" << this->predictedBurstTime << "]");
 
