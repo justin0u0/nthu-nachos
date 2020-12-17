@@ -32,6 +32,8 @@ class Scheduler {
     				// running needs to be deleted
     void Print();		// Print contents of ready list
 
+    void AgingProcess(); // Update ageTick of all threads
+
     // SelfTest for scheduler is implemented in class Thread
     
   private:

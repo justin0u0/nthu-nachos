@@ -47,6 +47,8 @@ void Alarm::CallBack() {
   Interrupt *interrupt = kernel->interrupt;
   MachineStatus status = interrupt->getStatus();
 
+  kernel->scheduler->AgingProcess();
+
   if (status != IdleMode) {
     interrupt->YieldOnReturn();
   }

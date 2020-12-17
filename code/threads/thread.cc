@@ -395,8 +395,7 @@ void Thread::RestoreUserState() {
 //	purposes.
 //----------------------------------------------------------------------
 
-static void
-SimpleThread(int which) {
+static void SimpleThread(int which) {
   int num;
 
   for (num = 0; num < 5; num++) {

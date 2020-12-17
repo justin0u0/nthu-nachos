@@ -70,6 +70,7 @@ void Scheduler::ReadyToRun(Thread *thread) {
   //cout << "Putting thread on ready list: " << thread->getName() << endl ;
 
   thread->setStatus(READY);
+  thread->setAgeTick(kernel->stats->totalTicks + 1500);
 
   if (thread->getPriority() < 50) {
     l3Queue->Append(thread);
@@ -199,5 +200,71 @@ void Scheduler::CheckToBeDestroyed() {
 //----------------------------------------------------------------------
 void Scheduler::Print() {
   cout << "Ready list contents:\n";
+  l1Queue->Apply(ThreadPrint);
+  l2Queue->Apply(ThreadPrint);
   l3Queue->Apply(ThreadPrint);
+}
+
+void Scheduler::AgingProcess() {
+  ASSERT(kernel->interrupt->getLevel() == IntOff);
+
+  SortedList<Thread*>* newL2Queue = new SortedList<Thread*>(PriorityCompare);
+  List<Thread*>* newL3Queue = new List<Thread*>;
+
+  ListIterator<Thread*> *iterator;
+
+  // Level 1 is ok to add priority directly
+  iterator = new ListIterator<Thread*>(l1Queue);
+  for (; !iterator->IsDone(); iterator->Next()) {
+    Thread* t = iterator->Item();
+    if (t->getAgeTick() <= kernel->stats->totalTicks) {
+      if (t->getPriority() + 10 >= 150) {
+        t->setPriority(149);
+      } else {
+        t->setPriority(t->getPriority() + 10);
+      }
+      t->setAgeTick(kernel->stats->totalTicks + 1500);
+    }
+  }
+  delete iterator;
+
+  // Level 2
+  iterator = new ListIterator<Thread*>(l2Queue);
+  for (; !iterator->IsDone(); iterator->Next()) {
+    Thread* t = iterator->Item();
+    if (t->getAgeTick() <= kernel->stats->totalTicks) {
+      t->setPriority(t->getPriority() + 10);
+      t->setAgeTick(kernel->stats->totalTicks + 1500);
+      if (t->getPriority() >= 100) {
+        l1Queue->Insert(t);
+      } else {
+        newL2Queue->Insert(t);
+      }
+    } else {
+      newL2Queue->Insert(t);
+    }
+  }
+
+  // Level 3
+  iterator = new ListIterator<Thread*>(l3Queue);
+  for (; !iterator->IsDone(); iterator->Next()) {
+    Thread* t = iterator->Item();
+    if (t->getAgeTick() <= kernel->stats->totalTicks) {
+      t->setPriority(t->getPriority() + 10);
+      t->setAgeTick(kernel->stats->totalTicks + 1500);
+      if (t->getPriority() >= 50) {
+        newL2Queue->Insert(t);
+      } else {
+        newL3Queue->Append(t);
+      }
+    } else {
+      newL3Queue->Append(t);
+    }
+  }
+  delete iterator;
+
+  delete l2Queue;
+  l2Queue = newL2Queue;
+  delete l3Queue;
+  l3Queue = newL3Queue;
 }
