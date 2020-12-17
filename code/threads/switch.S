@@ -327,8 +327,8 @@ ThreadRoot:
 /* void SWITCH( thread *t1, thread *t2 )
 **
 ** on entry, stack looks like this:
-**      8(esp)  ->              thread *t2
-**      4(esp)  ->              thread *t1
+**      8(esp)  ->              thread *t2 (new thread)
+**      4(esp)  ->              thread *t1 (old thread)
 **       (esp)  ->              return address
 **
 ** we push the current eax on the stack so that we can use it as
@@ -342,6 +342,7 @@ ThreadRoot:
 _SWITCH:		
 SWITCH:
         movl    %eax,_eax_save          # save the value of eax
+
         movl    4(%esp),%eax            # move pointer to t1 into eax
         movl    %ebx,_EBX(%eax)         # save registers
         movl    %ecx,_ECX(%eax)
@@ -356,7 +357,6 @@ SWITCH:
         movl    %ebx,_PC(%eax)          # save it into the pc storage
 
         movl    8(%esp),%eax            # move pointer to t2 into eax
-
         movl    _EAX(%eax),%ebx         # get new value for eax into ebx
         movl    %ebx,_eax_save          # save it
         movl    _EBX(%eax),%ebx         # retore old registers
@@ -368,6 +368,7 @@ SWITCH:
         movl    _ESP(%eax),%esp         # restore stack pointer
         movl    _PC(%eax),%eax          # restore return address into eax
         movl    %eax,4(%esp)            # copy over the ret address on the stack
+
         movl    _eax_save,%eax
 
         ret
