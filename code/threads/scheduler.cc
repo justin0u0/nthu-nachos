@@ -28,8 +28,8 @@ int PriorityCompare(Thread *t1, Thread *t2) {
   return t2->getPriority() - t1->getPriority();
 }
 
-int BurstTimeCompare(Thread *t1, Thread *t2) {
-  return t1->getBurstTime() - t2->getBurstTime();
+int PredictedBurstTimeCompare(Thread *t1, Thread *t2) {
+  return t1->getPredictedBurstTime() - t2->getPredictedBurstTime();
 }
 
 //----------------------------------------------------------------------
@@ -39,7 +39,7 @@ int BurstTimeCompare(Thread *t1, Thread *t2) {
 //----------------------------------------------------------------------
 
 Scheduler::Scheduler() {
-  l1Queue = new SortedList<Thread *>(BurstTimeCompare);
+  l1Queue = new SortedList<Thread *>(PredictedBurstTimeCompare);
   l2Queue = new SortedList<Thread *>(PriorityCompare);
   l3Queue = new List<Thread *>;
   toBeDestroyed = NULL;
@@ -323,7 +323,7 @@ bool Scheduler::CheckIfYield() {
   Thread *t = kernel->currentThread;
   // Switch next thread if current thread is l2, l3, or current thread is L1 but longer burst time
   if (!l1Queue->IsEmpty()) {
-    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getBurstTime() > l1Queue->Front()->getBurstTime()));
+    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getPredictedBurstTime() > l1Queue->Front()->getPredictedBurstTime()));
   }
 
   // Switch next thread if current thread is L3

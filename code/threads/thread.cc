@@ -39,7 +39,7 @@ Thread::Thread(char *threadName, int threadID, int threadPriority) {
   ID = threadID;
   name = threadName;
   priority = threadPriority;
-  burstTime = 0.0;
+  predictedBurstTime = 0.0;
   stackTop = NULL;
   stack = NULL;
   status = JUST_CREATED;
@@ -239,11 +239,11 @@ void Thread::Sleep(bool finishing) {
 
   // Current thread running -> waiting
   // update burst time
-  double oldBurstTime = this->burstTime;
+  double oldPredictedBurstTime = this->predictedBurstTime;
   double interval = kernel->stats->totalTicks - this->startTick;
-  this->setBurstTime(0.5 * this->burstTime + 0.5 * interval);
+  this->setPredictedBurstTime(0.5 * this->predictedBurstTime + 0.5 * interval);
   DEBUG(dbgScheduler, "[D] Tick [" << kernel->stats->totalTicks << "]: Thread [" << this->ID
-    << "] update approximate burst time, from [" << oldBurstTime << "], add [" << interval << "], to [" << this->burstTime << "]");
+    << "] update approximate burst time, from [" << oldPredictedBurstTime << "], add [" << interval << "], to [" << this->predictedBurstTime << "]");
 
   //cout << "debug Thread::Sleep " << name << "wait for Idle\n";
   while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {

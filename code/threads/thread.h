@@ -109,8 +109,8 @@ class Thread {
     ASSERT(threadPriority >= 0 && threadPriority < 150);
     priority = threadPriority;
   }
-  double getBurstTime() { return burstTime; }
-  void setBurstTime(double threadBurstTime) { burstTime = threadBurstTime; }
+  double getPredictedBurstTime() { return predictedBurstTime; }
+  void setPredictedBurstTime(double threadPredictedBurstTime) { predictedBurstTime = threadPredictedBurstTime; }
   int getStartTick() { return startTick; }
   void setStartTick(int tick) { startTick = tick; }
   int getTotalWaitingTicks() { return totalWaitingTicks; }
@@ -142,10 +142,10 @@ class Thread {
 
   // For scheduling
   int priority;
-  double burstTime;       // The predicted burstTime
-  int startTick;          // The tick when thread start to run
-  int lastAgeTick;        // The tick when totalWaitingTick update, or thread just go into ready list
-  int totalWaitingTicks;  // The total ticks thread in the ready list
+  double predictedBurstTime;  // The predicted burstTime
+  int startTick;              // The tick when thread start to run
+  int lastAgeTick;            // The tick when totalWaitingTick update, or thread just go into ready list
+  int totalWaitingTicks;      // The total ticks thread in the ready list
 
  public:
   void SaveUserState();     // save user-level register state
