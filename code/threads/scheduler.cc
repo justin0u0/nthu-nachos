@@ -227,6 +227,7 @@ void Scheduler::AgingProcess() {
   iterator = new ListIterator<Thread*>(l1Queue);
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
+    DEBUG(dbgScheduler, "[L1] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] has ageTick [" << t->getAgeTick() << "]");
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
       if (t->getPriority() + 10 >= 150) {
         DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
@@ -246,6 +247,7 @@ void Scheduler::AgingProcess() {
   iterator = new ListIterator<Thread*>(l2Queue);
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
+    DEBUG(dbgScheduler, "[L1] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] has ageTick [" << t->getAgeTick() << "]");
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
       DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
         << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << t->getPriority() + 10 << "]");
@@ -265,6 +267,7 @@ void Scheduler::AgingProcess() {
   iterator = new ListIterator<Thread*>(l3Queue);
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
+    DEBUG(dbgScheduler, "[L1] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] has ageTick [" << t->getAgeTick() << "]");
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
       DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
         << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << t->getPriority() + 10 << "]");
