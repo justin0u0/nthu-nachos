@@ -31,6 +31,8 @@ Kernel::Kernel(int argc, char **argv) {
     // default not used
     isPhyPageUsed[i] = false;
   }
+  for (int i = 0; i < 10; i++)
+    execfilePriority[i] = 0;
 
   randomSlice = FALSE;
   debugUserProg = FALSE;
@@ -82,6 +84,11 @@ Kernel::Kernel(int argc, char **argv) {
       cout << "Partial usage: nachos [-nf]\n";
 #endif
       cout << "Partial usage: nachos [-n #] [-m #]\n";
+    } else if (strcmp(argv[i], "-ep") == 0) {
+      ASSERT(i + 2 < argc);  // i + 1 is filename, i + 2 is priority
+      execfile[++execfileNum] = argv[i + 1];
+      execfilePriority[execfileNum] = atoi(argv[i + 2]);
+      i += 2;
     }
   }
 }
@@ -98,7 +105,7 @@ void Kernel::Initialize() {
   // But if it ever tries to give up the CPU, we better have a Thread
   // object to save its state.
 
-  currentThread = new Thread("main", threadNum++);
+  currentThread = new Thread("main", threadNum++, 149);
   currentThread->setStatus(RUNNING);
 
   stats = new Statistics();        // collect statistics
@@ -254,14 +261,14 @@ void ForkExecute(Thread *t) {
 
 void Kernel::ExecAll() {
   for (int i = 1; i <= execfileNum; i++) {
-    int a = Exec(execfile[i]);
+    int a = Exec(execfile[i], execfilePriority[i]);
   }
   currentThread->Finish();
   //Kernel::Exec();
 }
 
-int Kernel::Exec(char *name) {
-  t[threadNum] = new Thread(name, threadNum);
+int Kernel::Exec(char *name, int priority) {
+  t[threadNum] = new Thread(name, threadNum, priority);
   t[threadNum]->space = new AddrSpace();
   t[threadNum]->Fork((VoidFunctionPtr)&ForkExecute, (void *)t[threadNum]);
   threadNum++;
