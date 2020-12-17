@@ -110,7 +110,6 @@ class Thread {
     priority = threadPriority;
   }
   double getPredictedBurstTime() { return predictedBurstTime; }
-  void setPredictedBurstTime(double threadPredictedBurstTime) { predictedBurstTime = threadPredictedBurstTime; }
   int getBurstTime() { return burstTime; }
   void setBurstTime(int threadBirstTime) { burstTime = threadBirstTime; }
   int getStartTick() { return startTick; }
