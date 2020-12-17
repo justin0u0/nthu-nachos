@@ -113,8 +113,10 @@ class Thread {
   void setBurstTime(double threadBurstTime) { burstTime = threadBurstTime; }
   int getStartTick() { return startTick; }
   void setStartTick(int tick) { startTick = tick; }
-  int getAgeTick() { return ageTick; }
-  void setAgeTick(int tick) { ageTick = tick; }
+  int getTotalWaitingTicks() { return totalWaitingTicks; }
+  void setTotalWaitingTicks(int tick) { totalWaitingTicks = tick; }
+  int getLastAgeTick() { return lastAgeTick; }
+  void setLastAgeTick(int tick) { lastAgeTick = tick; }
 
   void Print() { cout << name; }
   void SelfTest();  // test whether thread impl is working
@@ -140,9 +142,10 @@ class Thread {
 
   // For scheduling
   int priority;
-  double burstTime;
-  int startTick;
-  int ageTick;
+  double burstTime;       // The predicted burstTime
+  int startTick;          // The tick when thread start to run
+  int lastAgeTick;        // The tick when totalWaitingTick update, or thread just go into ready list
+  int totalWaitingTicks;  // The total ticks thread in the ready list
 
  public:
   void SaveUserState();     // save user-level register state
