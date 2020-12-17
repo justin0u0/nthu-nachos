@@ -153,7 +153,7 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
 
   DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
   DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << nextThread->getID()
-    << " is now selected for execution, thread " << oldThread->getID() << "is replaced, and it has executed "
+    << " is now selected for execution, thread " << oldThread->getID() << " is replaced, and it has executed "
     << kernel->stats->totalTicks - oldThread->getStartTick() << " ticks");
 
   // This is a machine-dependent assembly language routine defined
