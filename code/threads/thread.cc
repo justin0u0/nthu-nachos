@@ -198,6 +198,8 @@ void Thread::Yield() {
 
   DEBUG(dbgThread, "Yielding thread: " << name);
 
+  this->burstTime += kernel->stats->totalTicks - this->startTick;
+
   nextThread = kernel->scheduler->FindNextToRun();
   if (nextThread != NULL) {
     kernel->scheduler->ReadyToRun(this);
@@ -239,11 +241,14 @@ void Thread::Sleep(bool finishing) {
 
   // Current thread running -> waiting
   // update burst time
+  this->burstTime += kernel->stats->totalTicks - this->startTick;
   double oldPredictedBurstTime = this->predictedBurstTime;
-  double interval = kernel->stats->totalTicks - this->startTick;
-  this->setPredictedBurstTime(0.5 * this->predictedBurstTime + 0.5 * interval);
+  this->setPredictedBurstTime(0.5 * this->predictedBurstTime + 0.5 * this->burstTime);
   DEBUG(dbgScheduler, "[D] Tick [" << kernel->stats->totalTicks << "]: Thread [" << this->ID
-    << "] update approximate burst time, from [" << oldPredictedBurstTime << "], add [" << interval << "], to [" << this->predictedBurstTime << "]");
+    << "] update approximate burst time, from [" << oldPredictedBurstTime << "], add [" << this->burstTime << "], to [" << this->predictedBurstTime << "]");
+
+  // burst time should reset after going waiting state
+  burstTime = 0;
 
   //cout << "debug Thread::Sleep " << name << "wait for Idle\n";
   while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {

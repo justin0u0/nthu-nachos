@@ -111,6 +111,8 @@ class Thread {
   }
   double getPredictedBurstTime() { return predictedBurstTime; }
   void setPredictedBurstTime(double threadPredictedBurstTime) { predictedBurstTime = threadPredictedBurstTime; }
+  int getBurstTime() { return burstTime; }
+  void setBurstTime(int threadBirstTime) { burstTime = threadBirstTime; }
   int getStartTick() { return startTick; }
   void setStartTick(int tick) { startTick = tick; }
   int getTotalWaitingTicks() { return totalWaitingTicks; }
@@ -143,6 +145,7 @@ class Thread {
   // For scheduling
   int priority;
   double predictedBurstTime;  // The predicted burstTime
+  int burstTime;              // The total burst ticks until it going waiting state, should accumulate before context switch
   int startTick;              // The tick when thread start to run
   int lastAgeTick;            // The tick when totalWaitingTick update, or thread just go into ready list
   int totalWaitingTicks;      // The total ticks thread in the ready list
