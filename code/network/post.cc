@@ -159,7 +159,7 @@ PostOfficeInput::PostOfficeInput(int nBoxes)
 
     network = new NetworkInput(this);
 
-    Thread *t = new Thread("postal worker", 1);
+    Thread *t = new Thread("postal worker", 1, 0);
 
     t->Fork(PostOfficeInput::PostalDelivery, this);
 }
