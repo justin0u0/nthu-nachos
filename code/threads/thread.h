@@ -107,9 +107,14 @@ class Thread {
   int getID() { return (ID); }
 
   int getPriority() { return priority; }
-  int setProiroty(int p) {
-    ASSERT(p >= 0 && p < 150);
-    priority = p;
+  void setProiroty(int threadPriority) {
+    ASSERT(threadPriority >= 0 && threadPriority < 150);
+    priority = threadPriority;
+  }
+
+  double getBurstTime() { return burstTime; }
+  void setBurstTime(double threadBurstTime) {
+    burstTime = threadBurstTime;
   }
 
   void Print() { cout << name; }
@@ -134,7 +139,9 @@ class Thread {
 
   int userRegisters[NumTotalRegs];  // user-level CPU register state
 
+  // For scheduling
   int priority;
+  double burstTime;
 
  public:
   void SaveUserState();     // save user-level register state

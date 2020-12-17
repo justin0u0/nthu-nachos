@@ -25,7 +25,11 @@
 #include "main.h"
 
 int PriorityCompare(Thread *t1, Thread *t2) {
-  return t1->getPriority() - t2->getPriority();
+  return t2->getPriority() - t1->getPriority();
+}
+
+int BurstTimeCompare(Thread *t1, Thread *t2) {
+  return t1->getBurstTime() - t2->getBurstTime();
 }
 
 //----------------------------------------------------------------------
@@ -35,6 +39,7 @@ int PriorityCompare(Thread *t1, Thread *t2) {
 //----------------------------------------------------------------------
 
 Scheduler::Scheduler() {
+  l1Queue = new SortedList<Thread *>(BurstTimeCompare);
   l2Queue = new SortedList<Thread *>(PriorityCompare);
   l3Queue = new List<Thread *>;
   toBeDestroyed = NULL;
