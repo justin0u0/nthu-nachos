@@ -229,8 +229,12 @@ void Scheduler::AgingProcess() {
     Thread* t = iterator->Item();
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
       if (t->getPriority() + 10 >= 150) {
+        DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
+          << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << 149);
         t->setPriority(149);
       } else {
+        DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
+          << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << t->getPriority() + 10);
         t->setPriority(t->getPriority() + 10);
       }
       t->setAgeTick(kernel->stats->totalTicks + 1500);
@@ -243,6 +247,8 @@ void Scheduler::AgingProcess() {
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
+      DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
+        << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << t->getPriority() + 10);
       t->setPriority(t->getPriority() + 10);
       t->setAgeTick(kernel->stats->totalTicks + 1500);
       if (t->getPriority() >= 100) {
@@ -260,6 +266,8 @@ void Scheduler::AgingProcess() {
   for (; !iterator->IsDone(); iterator->Next()) {
     Thread* t = iterator->Item();
     if (t->getAgeTick() <= kernel->stats->totalTicks) {
+      DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " 
+        << t->getID() << "chagnes its priority from " << t->getPriority() << " to " << t->getPriority() + 10);
       t->setPriority(t->getPriority() + 10);
       t->setAgeTick(kernel->stats->totalTicks + 1500);
       if (t->getPriority() >= 50) {

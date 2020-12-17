@@ -107,7 +107,6 @@ class Thread {
   int getPriority() { return priority; }
   void setPriority(int threadPriority) {
     ASSERT(threadPriority >= 0 && threadPriority < 150);
-    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << ID << "chagnes its priority from " << priority << " to " << threadPriority);
     priority = threadPriority;
   }
   double getBurstTime() { return burstTime; }
