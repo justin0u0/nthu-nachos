@@ -107,10 +107,12 @@ class Thread {
   int getPriority() { return priority; }
   void setPriority(int threadPriority) {
     ASSERT(threadPriority >= 0 && threadPriority < 150);
+    DEBUG(dbgScheduler, "Tick " << kernel->stats->totalTicks << ": Thread " << ID << "chagnes its priority from " << priority << " to " << threadPriority);
     priority = threadPriority;
   }
   double getBurstTime() { return burstTime; }
   void setBurstTime(double threadBurstTime) { burstTime = threadBurstTime; }
+  int getStartTick() { return startTick; }
   void setStartTick(int tick) { startTick = tick; }
   int getAgeTick() { return ageTick; }
   void setAgeTick(int tick) { ageTick = tick; }
