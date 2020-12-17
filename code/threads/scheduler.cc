@@ -73,13 +73,13 @@ void Scheduler::ReadyToRun(Thread *thread) {
 
   if (thread->getPriority() < 50) {
     l3Queue->Append(thread);
-    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << "is inserted into queue L3");
+    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L3");
   } else if (thread->getPriority() < 100) {
     l2Queue->Insert(thread);
-    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << "is inserted into queue L2");
+    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L2");
   } else { // thread->getPriority() < 150
     l1Queue->Insert(thread);
-    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << "is inserted into queue L1");
+    DEBUG(dbgScheuler, "Tick " << kernel->stats->totalTicks << ": Thread " << thread->getID() << " is inserted into queue L1");
   }
 }
 
