@@ -17,6 +17,7 @@
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
+#include "list.h"
 
 //----------------------------------------------------------------------
 // ListElement<T>::ListElement

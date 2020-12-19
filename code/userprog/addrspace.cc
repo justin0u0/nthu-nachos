@@ -121,7 +121,7 @@ bool AddrSpace::Load(char *fileName) {
   numPages = divRoundUp(size, PageSize);
   size = numPages * PageSize;
 
-  ASSERT(numPages <= kernel->numFreePages); // Check if the free pysical pages <= numPages
+  ASSERT(numPages <= kernel->numFreePages); // Check if the free physical pages <= numPages
 
   pageTable = new TranslationEntry[numPages];
 
