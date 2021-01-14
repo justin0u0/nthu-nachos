@@ -99,6 +99,12 @@ public:
 
 	void Print(); // List all the files and their contents
 
+	OpenFileId OpenAFile(char *name); // Used for kernel open system call
+
+	int Close(OpenFileId openFileId); // Used for kernel close system call
+
+	OpenFile *currentOpenFile; // Since MP4 will only open a file at same time, so we only need 1 OpenFile
+
 private:
 	OpenFile *freeMapFile;	 // Bit map of free disk blocks,
 							 // represented as a file

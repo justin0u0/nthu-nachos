@@ -33,6 +33,28 @@ int SysCreate(char *filename)
 	// 0: failed
 	return kernel->interrupt->CreateFile(filename);
 }
+#else // FILESYS
+int SysCreate(char *fileName, int fileSize) {
+	return kernel->fileSystem->Create(fileName, fileSize);
+}
+
+OpenFileId SysOpen(char *fileName) {
+	return kernel->fileSystem->OpenAFile(fileName);
+}
+
+int SysWrite(char *buffer, int size, OpenFileId openFileId) {
+	if (openFileId == 1 && kernel->fileSystem->currentOpenFile != NULL)
+		return kernel->fileSystem->currentOpenFile->Write(buffer, size);
+}
+
+int SysRead(char *buffer, int size, OpenFileId openFileId) {
+	if (openFileId == 1 && kernel->fileSystem->currentOpenFile != NULL)
+		return kernel->fileSystem->currentOpenFile->Read(buffer, size);
+}
+
+int SysClose(OpenFileId openFileId) {
+	return kernel->fileSystem->Close(openFileId);
+}
 #endif
 
 #endif /* ! __USERPROG_KSYSCALL_H__ */
