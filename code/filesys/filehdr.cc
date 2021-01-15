@@ -40,7 +40,7 @@ FileHeader::FileHeader()
 {
 	numBytes = -1;
 	numSectors = -1;
-	level = -1;
+	level = 1;
 	memset(dataSectors, -1, sizeof(dataSectors));
 }
 
@@ -224,6 +224,7 @@ void FileHeader::WriteBack(int sector)
 
 int FileHeader::ByteToSector(int offset)
 {
+	DEBUG(dbgFile, "ByteToSector: " << this->level << " " << offset);
 	if (level == 1) {
 		return (dataSectors[offset / SectorSize]);
 	} else {
