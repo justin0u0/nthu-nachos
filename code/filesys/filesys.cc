@@ -97,8 +97,8 @@ FileSystem::FileSystem(bool format) {
     // Second, allocate space for the data blocks containing the contents
     // of the directory and bitmap files.  There better be enough space!
 
-    ASSERT(mapHdr->Allocate(freeMap, FreeMapFileSize));
-    ASSERT(dirHdr->Allocate(freeMap, DirectoryFileSize));
+    ASSERT(mapHdr->AllocateMultiLevel(freeMap, FreeMapFileSize));
+    ASSERT(dirHdr->AllocateMultiLevel(freeMap, DirectoryFileSize));
 
     // Flush the bitmap and directory FileHeaders back to disk
     // We need to do this before we can "Open" the file, since open

@@ -54,7 +54,7 @@ public:
 
 	int GetSectorNeedsByLevel(int level, int fileSize); // Return how many sectors does the level need by given fileSize
 
-	void RecursivelyAllocate(PersistentBitmap* bitmap, int fileSize); // FindAndSet recursively
+	void RecursivelyAllocate(PersistentBitmap* bitmap, bool isRightMost, int fileSize); // FindAndSet recursively
 
 	void Deallocate(PersistentBitmap *bitMap);			   // De-allocate this file's
 														   //  data blocks

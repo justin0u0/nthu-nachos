@@ -114,6 +114,8 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 	numBytes = fileSize;
 	numSectors = divRoundUp(fileSize, SectorSize);
 
+	DEBUG(dbgFile, "AllocateMultiLevel: numSectors = " << numSectors);
+
 	// Compute level
 	if (fileSize > ThreeLevelMaxFileSize) {
 		level = 4;
@@ -130,10 +132,12 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 		totalSectors += GetSectorNeedsByLevel(i, fileSize);
 	}
 
+	DEBUG(dbgFile, "AllocateMultiLevel: totalSectors = " << totalSectors);
+
 	if (freeMap->NumClear() < totalSectors)
 		return FALSE; // not enough space
 
-	RecursivelyAllocate(freeMap, fileSize);
+	RecursivelyAllocate(freeMap, true, fileSize);
 	return TRUE;
 }
 
@@ -141,8 +145,19 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 // FileHeader::RecursivelyAllocate
 // 
 //----------------------------------------------------------------------
-void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, int fileSize) {
-	int sectorNeeds = GetSectorNeedsByLevel(this->level, fileSize);
+void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost, int fileSize) {
+	// DEBUG(dbgFile, "RecursivelyAllocate: level, sectorNeeds = " << level << ' ' << sectorNeeds);
+
+	int sectorNeeds;
+	if (isRightMost) {
+		sectorNeeds = GetSectorNeedsByLevel(level, fileSize) % NumDirect;
+		if (sectorNeeds == 0) {
+			sectorNeeds = NumDirect;
+		}
+	} else {
+		sectorNeeds = NumDirect;
+	}
+
 	for (int i = 0; i < sectorNeeds; i++) {
 		dataSectors[i] = freeMap->FindAndSet();
 		ASSERT(dataSectors[i] >= 0);
@@ -152,7 +167,7 @@ void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, int fileSize) {
 			fileHeader->level = this->level - 1;
 			fileHeader->numBytes = this->numBytes;
 			fileHeader->numSectors = this->numSectors;
-			fileHeader->RecursivelyAllocate(freeMap, fileSize);
+			fileHeader->RecursivelyAllocate(freeMap, (isRightMost && (i == sectorNeeds - 1)), fileSize);
 			fileHeader->WriteBack(dataSectors[i]);
 		}
 	}
@@ -224,8 +239,9 @@ void FileHeader::WriteBack(int sector)
 
 int FileHeader::ByteToSector(int offset)
 {
-	DEBUG(dbgFile, "ByteToSector: " << this->level << " " << offset);
+	// DEBUG(dbgFile, "ByteToSector: " << this->level << " " << offset);
 	if (level == 1) {
+		// DEBUG(dbgFile, "ByteToSector: level 1: " << offset / SectorSize << " " << dataSectors[offset / SectorSize]);
 		return (dataSectors[offset / SectorSize]);
 	} else {
 		int totalSectorSize = SectorSize;
@@ -233,8 +249,11 @@ int FileHeader::ByteToSector(int offset)
 			totalSectorSize *= NumDirect;
 
 		FileHeader* fileHeader = new FileHeader;
+		// DEBUG(dbgFile, "ByteToSector: sector = " << dataSectors[offset / totalSectorSize]);
 		fileHeader->FetchFrom(dataSectors[offset / totalSectorSize]);
-		return fileHeader->ByteToSector(offset % totalSectorSize);
+		int sector = fileHeader->ByteToSector(offset % totalSectorSize);
+		// DEBUG(dbgFile, "ByteToSector: sector = " << sector);
+		return sector;
 	}
 }
 
