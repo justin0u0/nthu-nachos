@@ -40,6 +40,7 @@ FileHeader::FileHeader()
 {
 	numBytes = -1;
 	numSectors = -1;
+	level = -1;
 	memset(dataSectors, -1, sizeof(dataSectors));
 }
 
@@ -81,6 +82,80 @@ bool FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 		ASSERT(dataSectors[i] >= 0);
 	}
 	return TRUE;
+}
+
+//----------------------------------------------------------------------
+// FileHeader::GetSectorNeedsByLevel
+// 
+//----------------------------------------------------------------------
+int FileHeader::GetSectorNeedsByLevel(int level, int fileSize) {
+	if (level == 1) {
+		return divRoundUp(fileSize, SectorSize);
+	}
+	if (level == 2) {
+		return divRoundUp(fileSize, NumDirect * SectorSize);
+	}
+	if (level == 3) {
+		return divRoundUp(fileSize, NumDirect * NumDirect * SectorSize);
+	}
+	if (level == 4) {
+		return divRoundUp(fileSize, NumDirect * NumDirect * NumDirect * SectorSize);
+	}
+	ASSERTNOTREACHED();
+}
+
+//----------------------------------------------------------------------
+// FileHeader::AllocateMultiLevel
+// 
+//----------------------------------------------------------------------
+
+bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
+{
+	numBytes = fileSize;
+	numSectors = divRoundUp(fileSize, SectorSize);
+
+	// Compute level
+	if (fileSize > ThreeLevelMaxFileSize) {
+		level = 4;
+	} else if (fileSize > TwoLevelMaxFileSize) {
+		level = 3;
+	} else if (fileSize > OneLevelMaxFileSize) {
+		level = 2;
+	} else {
+		level = 1;
+	}
+
+	int totalSectors = 0;
+	for (int i = 1; i <= level; i++) {
+		totalSectors += GetSectorNeedsByLevel(i, fileSize);
+	}
+
+	if (freeMap->NumClear() < totalSectors)
+		return FALSE; // not enough space
+
+	RecursivelyAllocate(freeMap, fileSize);
+	return TRUE;
+}
+
+//----------------------------------------------------------------------
+// FileHeader::RecursivelyAllocate
+// 
+//----------------------------------------------------------------------
+void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, int fileSize) {
+	int sectorNeeds = GetSectorNeedsByLevel(this->level, fileSize);
+	for (int i = 0; i < sectorNeeds; i++) {
+		dataSectors[i] = freeMap->FindAndSet();
+		ASSERT(dataSectors[i] >= 0);
+
+		if (level > 1) {
+			FileHeader *fileHeader = new FileHeader;
+			fileHeader->level = this->level - 1;
+			fileHeader->numBytes = this->numBytes;
+			fileHeader->numSectors = this->numSectors;
+			fileHeader->RecursivelyAllocate(freeMap, fileSize);
+			fileHeader->WriteBack(dataSectors[i]);
+		}
+	}
 }
 
 //----------------------------------------------------------------------
@@ -149,7 +224,17 @@ void FileHeader::WriteBack(int sector)
 
 int FileHeader::ByteToSector(int offset)
 {
-	return (dataSectors[offset / SectorSize]);
+	if (level == 1) {
+		return (dataSectors[offset / SectorSize]);
+	} else {
+		int totalSectorSize = SectorSize;
+		for (int i = 1; i < level; i++)
+			totalSectorSize *= NumDirect;
+
+		FileHeader* fileHeader = new FileHeader;
+		fileHeader->FetchFrom(dataSectors[offset / totalSectorSize]);
+		return fileHeader->ByteToSector(offset % totalSectorSize);
+	}
 }
 
 //----------------------------------------------------------------------

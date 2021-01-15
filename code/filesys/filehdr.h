@@ -17,7 +17,11 @@
 #include "disk.h"
 #include "pbitmap.h"
 
-#define NumDirect ((SectorSize - 2 * sizeof(int)) / sizeof(int))
+#define NumDirect ((SectorSize - 3 * sizeof(int)) / sizeof(int))
+#define OneLevelMaxFileSize (NumDirect * SectorSize) // 4KB
+#define TwoLevelMaxFileSize (NumDirect * NumDirect * SectorSize) // 128KB
+#define ThreeLevelMaxFileSize (NumDirect * NumDirect * NumDirect * SectorSize) // 4MB
+#define FourLevelMaxFileSize (NumDirect * NumDirect * NumDirect * NumDirect * SectorSize) // 128MB
 #define MaxFileSize (NumDirect * SectorSize)
 
 // The following class defines the Nachos "file header" (in UNIX terms,
@@ -45,6 +49,13 @@ public:
 	bool Allocate(PersistentBitmap *bitMap, int fileSize); // Initialize a file header,
 														   //  including allocating space
 														   //  on disk for the file data
+
+	bool AllocateMultiLevel(PersistentBitmap *bitMap, int fileSize); // Initialize multi-level file header
+
+	int GetSectorNeedsByLevel(int level, int fileSize); // Return how many sectors does the level need by given fileSize
+
+	void RecursivelyAllocate(PersistentBitmap* bitmap, int fileSize); // FindAndSet recursively
+
 	void Deallocate(PersistentBitmap *bitMap);			   // De-allocate this file's
 														   //  data blocks
 
@@ -79,6 +90,7 @@ private:
 
 	int numBytes;				// Number of bytes in the file
 	int numSectors;				// Number of data sectors in the file
+	int level; // Level 1 -> data, Level 2 -> Level 1
 	int dataSectors[NumDirect]; // Disk sector numbers for each data
 								// block in the file
 };

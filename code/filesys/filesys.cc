@@ -203,9 +203,9 @@ bool FileSystem::Create(char *name, int initialSize) {
       success = FALSE;  // no space in directory
     else {
       hdr = new FileHeader;
-      if (!hdr->Allocate(freeMap, initialSize))
+      if (!hdr->AllocateMultiLevel(freeMap, initialSize)) {
         success = FALSE;  // no space on disk for data
-      else {
+      } else {
         success = TRUE;
         // everthing worked, flush all changes back to disk
         hdr->WriteBack(sector);
