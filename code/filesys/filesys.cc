@@ -228,9 +228,8 @@ void FileSystem::CreateDirectory(char *name) {
   bool isDirectory = false;
   AbsolutePath* absolutePath = new AbsolutePath(name);
   int found = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
-  if (found && isDirectory) {
-    return false;
-  }
+
+  ASSERT(!(found && isDirectory)); // Directory already exists
 
   int sector = freeMap->FindAndSet();
   directory->AddByAbsolutePath(absolutePath, 0, sector);
