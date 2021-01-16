@@ -79,6 +79,9 @@ public:
 	// Print the contents of the file.
 	void Print();
 
+	// Print the contents of the file, k is the number of bytes print
+	void PrintContentMultiLevel(int& k, bool isRightMost);
+
 private:
 	/*
 		MP4 hint:

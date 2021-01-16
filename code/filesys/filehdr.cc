@@ -295,24 +295,37 @@ int FileHeader::FileLength()
 
 void FileHeader::Print()
 {
-	int i, j, k;
-	char *data = new char[SectorSize];
+	int i, j, k = 0;
 
 	printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
-	for (i = 0; i < numSectors; i++)
-		printf("%d ", dataSectors[i]);
+
 	printf("\nFile contents:\n");
-	for (i = k = 0; i < numSectors; i++)
-	{
-		kernel->synchDisk->ReadSector(dataSectors[i], data);
-		for (j = 0; (j < SectorSize) && (k < numBytes); j++, k++)
-		{
-			if ('\040' <= data[j] && data[j] <= '\176') // isprint(data[j])
-				printf("%c", data[j]);
-			else
-				printf("\\%x", (unsigned char)data[j]);
-		}
-		printf("\n");
+	PrintContentMultiLevel(k, true);
+}
+
+void FileHeader::PrintContentMultiLevel(int& k, bool isRightMost) {
+	int sectors = NumDirect;
+	if (isRightMost && GetSectorNeedsByLevel(level) % NumDirect != 0) {
+		sectors = GetSectorNeedsByLevel(level) % NumDirect;
 	}
-	delete[] data;
+
+	for (int i = 0; i < sectors; i++) {
+		printf("%d ", dataSectors[i]);
+		if (level != 1) {
+			FileHeader* fileHeader = new FileHeader;
+			fileHeader->FetchFrom(dataSectors[i]);
+			fileHeader->PrintContentMultiLevel(k, (isRightMost && i == sectors - 1));
+		} else {
+			char *data = new char[SectorSize];
+			kernel->synchDisk->ReadSector(dataSectors[i], data);
+			for (int j = 0; j < SectorSize && k < numBytes; j++, k++) {
+				if ('\040' <= data[j] && data[j] <= '\176') // isprint(data[j])
+					printf("%c", data[j]);
+				else
+					printf("\\%x", (unsigned char)data[j]);
+			}
+			printf("\n");
+			delete[] data;
+		}
+	}
 }
