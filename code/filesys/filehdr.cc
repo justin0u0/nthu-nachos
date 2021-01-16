@@ -297,11 +297,18 @@ void FileHeader::Print()
 {
 	int i, j, k = 0;
 
-	printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
+	printf("FileHeader contents.  File size: %d\n", numBytes);
 
 	printf("\nFile contents:\n");
 	PrintContentMultiLevel(k, true);
+
+	printf("FileHeader. Total sectors used: %d\n", GetTotalSectorsUsed(true) + 1);
 }
+
+//----------------------------------------------------------------------
+// FileHeader::PrintContentMultiLevel
+// 	Print the contents of the file header
+//----------------------------------------------------------------------
 
 void FileHeader::PrintContentMultiLevel(int& k, bool isRightMost) {
 	int sectors = NumDirect;
@@ -329,4 +336,25 @@ void FileHeader::PrintContentMultiLevel(int& k, bool isRightMost) {
 			delete[] data;
 		}
 	}
+}
+
+//----------------------------------------------------------------------
+// FileHeader::GetTotalSectorsUsed
+//
+//----------------------------------------------------------------------
+int FileHeader::GetTotalSectorsUsed(bool isRightMost) {
+	int sectors = NumDirect;
+	if (isRightMost && GetSectorNeedsByLevel(level) % NumDirect != 0) {
+		sectors = GetSectorNeedsByLevel(level) % NumDirect;
+	}
+
+	int totalSectors = sectors;
+	for (int i = 0; i < sectors; i++) {
+		if (level != 1) {
+			FileHeader* fileHeader = new FileHeader;
+			fileHeader->FetchFrom(dataSectors[i]);
+			totalSectors += fileHeader->GetTotalSectorsUsed((isRightMost && i == sectors - 1));
+		}
+	}
+	return totalSectors;
 }
