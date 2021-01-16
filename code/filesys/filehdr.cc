@@ -318,12 +318,14 @@ void FileHeader::PrintContentMultiLevel(int& k, bool isRightMost) {
 			char *data = new char[SectorSize];
 			kernel->synchDisk->ReadSector(dataSectors[i], data);
 			for (int j = 0; j < SectorSize && k < numBytes; j++, k++) {
+				printf("%c", data[j]);
+				/*
 				if ('\040' <= data[j] && data[j] <= '\176') // isprint(data[j])
 					printf("%c", data[j]);
 				else
 					printf("\\%x", (unsigned char)data[j]);
+				*/
 			}
-			printf("\n");
 			delete[] data;
 		}
 	}
