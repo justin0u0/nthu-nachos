@@ -88,18 +88,18 @@ bool FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 // FileHeader::GetSectorNeedsByLevel
 // 
 //----------------------------------------------------------------------
-int FileHeader::GetSectorNeedsByLevel(int level, int fileSize) {
+int FileHeader::GetSectorNeedsByLevel(int level) {
 	if (level == 1) {
-		return divRoundUp(fileSize, SectorSize);
+		return divRoundUp(numBytes, SectorSize);
 	}
 	if (level == 2) {
-		return divRoundUp(fileSize, NumDirect * SectorSize);
+		return divRoundUp(numBytes, NumDirect * SectorSize);
 	}
 	if (level == 3) {
-		return divRoundUp(fileSize, NumDirect * NumDirect * SectorSize);
+		return divRoundUp(numBytes, NumDirect * NumDirect * SectorSize);
 	}
 	if (level == 4) {
-		return divRoundUp(fileSize, NumDirect * NumDirect * NumDirect * SectorSize);
+		return divRoundUp(numBytes, NumDirect * NumDirect * NumDirect * SectorSize);
 	}
 	ASSERTNOTREACHED();
 }
@@ -129,7 +129,7 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 
 	int totalSectors = 0;
 	for (int i = 1; i <= level; i++) {
-		totalSectors += GetSectorNeedsByLevel(i, fileSize);
+		totalSectors += GetSectorNeedsByLevel(i);
 	}
 
 	DEBUG(dbgFile, "AllocateMultiLevel: totalSectors = " << totalSectors);
@@ -145,17 +145,12 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 // FileHeader::RecursivelyAllocate
 // 
 //----------------------------------------------------------------------
-void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost, int fileSize) {
+void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost) {
 	// DEBUG(dbgFile, "RecursivelyAllocate: level, sectorNeeds = " << level << ' ' << sectorNeeds);
 
-	int sectorNeeds;
-	if (isRightMost) {
-		sectorNeeds = GetSectorNeedsByLevel(level, fileSize) % NumDirect;
-		if (sectorNeeds == 0) {
-			sectorNeeds = NumDirect;
-		}
-	} else {
-		sectorNeeds = NumDirect;
+	int sectorNeeds = NumDirect;
+	if (isRightMost && GetSectorNeedsByLevel(level) % NumDirect != 0) {
+		sectorNeeds = GetSectorNeedsByLevel(level) % NumDirect;
 	}
 
 	for (int i = 0; i < sectorNeeds; i++) {
@@ -167,7 +162,7 @@ void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost
 			fileHeader->level = this->level - 1;
 			fileHeader->numBytes = this->numBytes;
 			fileHeader->numSectors = this->numSectors;
-			fileHeader->RecursivelyAllocate(freeMap, (isRightMost && (i == sectorNeeds - 1)), fileSize);
+			fileHeader->RecursivelyAllocate(freeMap, (isRightMost && (i == sectorNeeds - 1)));
 			fileHeader->WriteBack(dataSectors[i]);
 		}
 	}

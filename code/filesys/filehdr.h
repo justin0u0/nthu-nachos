@@ -52,9 +52,9 @@ public:
 
 	bool AllocateMultiLevel(PersistentBitmap *bitMap, int fileSize); // Initialize multi-level file header
 
-	int GetSectorNeedsByLevel(int level, int fileSize); // Return how many sectors does the level need by given fileSize
+	int GetSectorNeedsByLevel(int level); // Return how many sectors does the level need by given fileSize
 
-	void RecursivelyAllocate(PersistentBitmap* bitmap, bool isRightMost, int fileSize); // FindAndSet recursively
+	void RecursivelyAllocate(PersistentBitmap* bitmap, bool isRightMost); // FindAndSet recursively
 
 	void Deallocate(PersistentBitmap *bitMap);			   // De-allocate this file's
 														   //  data blocks
