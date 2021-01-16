@@ -276,9 +276,19 @@ bool FileSystem::Remove(char *name) {
 
   freeMap = new PersistentBitmap(freeMapFile, NumSectors);
 
-  fileHdr->Deallocate(freeMap);  // remove data blocks
+  DEBUG(dbgFile, "Start deallocate multi-level");
+  if (debug->IsEnabled('f')) {
+    freeMap->Print();
+    directory->Print();
+  }
+  fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
   freeMap->Clear(sector);        // remove header block
   directory->Remove(name);
+  DEBUG(dbgFile, "End deallocate multi-level");
+  if (debug->IsEnabled('f')) {
+    freeMap->Print();
+    directory->Print();
+  }
 
   freeMap->WriteBack(freeMapFile);      // flush to disk
   directory->WriteBack(directoryFile);  // flush to disk
