@@ -62,7 +62,7 @@ public:
 	void Deallocate(PersistentBitmap *bitMap);
 
 	// De-allocate the file's data blocks
-	void DeallocateMultiLevel(PersistentBitmap *bitMap);
+	void DeallocateMultiLevel(PersistentBitmap *bitMap, bool isRightMost);
 
 	// Initialize file header from disk
 	void FetchFrom(int sectorNumber);

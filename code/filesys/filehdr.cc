@@ -185,6 +185,31 @@ void FileHeader::Deallocate(PersistentBitmap *freeMap)
 }
 
 //----------------------------------------------------------------------
+// FileHeader::DeallocateMultiLevel
+// 	De-allocate all the space allocated for data blocks for this file.
+//
+//	"freeMap" is the bit map of free disk sectors
+//----------------------------------------------------------------------
+
+void FileHeader::DeallocateMultiLevel(PersistentBitmap *freeMap, bool isRightMost) {
+	int sectors = NumDirect;
+	if (isRightMost && GetSectorNeedsByLevel(level) % NumDirect != 0) {
+		sectors = GetSectorNeedsByLevel(level) % NumDirect;
+	}
+
+	for (int i = 0; i < sectors; i++) {
+		ASSERT(freeMap->Test(dataSectors[i])); // Should be marked
+
+		if (level != 1) {
+			FileHeader* fileHeader = new FileHeader;
+			fileHeader->FetchFrom(dataSectors[i]);
+			fileHeader->DeallocateMultiLevel(freeMap, (isRightMost && (i == sectors - 1)));
+		}
+		freeMap->Clear(dataSectors[i]);
+	}
+}
+
+//----------------------------------------------------------------------
 // FileHeader::FetchFrom
 // 	Fetch contents of file header from disk.
 //
