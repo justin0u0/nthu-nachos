@@ -63,8 +63,6 @@
 // supports extensible files, the directory size sets the maximum number
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize (NumSectors / BitsInByte)
-#define NumDirEntries 10
-#define DirectoryFileSize (sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
@@ -218,6 +216,24 @@ bool FileSystem::Create(char *name, int initialSize) {
   }
   delete directory;
   return success;
+}
+
+bool FileSystem::CreateDirectory(char *name) {
+  Directory* directory;
+  PersistentBitmap *freeMap = new PersistentBitmap(freeMapFile, NumSectors);
+
+  directory = new Directory(NumDirEntries);
+  directory->FetchFrom(directoryFile);
+
+  bool isDirectory = false;
+  AbsolutePath* absolutePath = new AbsolutePath(name);
+  int found = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
+  if (found && isDirectory) {
+    return false;
+  }
+
+  int sector = freeMap->FindAndSet();
+  return directory->AddByAbsolutePath(absolutePath, 0, sector);
 }
 
 //----------------------------------------------------------------------

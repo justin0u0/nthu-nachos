@@ -19,8 +19,19 @@
 
 #include "openfile.h"
 
-#define FileNameMaxLen 9  // for simplicity, we assume \
-                         // file names are <= 9 characters long
+#define FileNameMaxLen 9  // for simplicity, we assume file names are <= 9 characters long
+#define AbsolutePathMaxLen 255
+#define NumDirEntries 64
+#define DirectoryFileSize (sizeof(DirectoryEntry) * NumDirEntries)
+
+class AbsolutePath {
+public:
+  char *path;
+  char **name;
+  int depth;
+  AbsolutePath(char* absolutePath);
+  ~AbsolutePath();
+};
 
 // The following class defines a "directory entry", representing a file
 // in the directory.  Each entry gives the name of the file, and where
@@ -30,12 +41,11 @@
 // access them directly.
 
 class DirectoryEntry {
- public:
+public:
   bool inUse;                     // Is this directory entry in use?
-  int sector;                     // Location on disk to find the
-                                  //   FileHeader for this file
-  char name[FileNameMaxLen + 1];  // Text name for file, with +1 for
-                                  // the trailing '\0'
+  bool isDirectory;               // Is the directoryEntry a directory
+  int sector;                     // Location on disk to find the FileHeader for this file
+  char name[FileNameMaxLen + 1];  // Text name for file, with +1 for the trailing '\0'
 };
 
 // The following class defines a UNIX-like "directory".  Each entry in
@@ -49,7 +59,7 @@ class DirectoryEntry {
 // from/to disk.
 
 class Directory {
- public:
+public:
   Directory(int size);  // Initialize an empty directory
                         // with space for "size" files
   ~Directory();         // De-allocate the directory
@@ -61,9 +71,15 @@ class Directory {
   int Find(char *name);  // Find the sector number of the
                          // FileHeader for file: "name"
 
+  int FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& isDirectory);
+
   bool Add(char *name, int newSector);  // Add a file name into the directory
 
+  bool AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector);
+
   bool Remove(char *name);  // Remove a file from the directory
+
+  bool RemoveByAbsolutePath(char *path);
 
   void List();   // Print the names of all the files
                  //  in the directory
@@ -71,7 +87,7 @@ class Directory {
                  //  of the directory -- all the file
                  //  names and their contents.
 
- private:
+private:
   /*
 		MP4 Hint:
 		Directory is actually a "file", be careful of how it works with OpenFile and FileHdr.

@@ -24,6 +24,34 @@
 #include "copyright.h"
 #include "filehdr.h"
 #include "utility.h"
+#include "debug.h"
+
+AbsolutePath::AbsolutePath(char *absolutePath) {
+  depth = 0;
+  path = new char[AbsolutePathMaxLen + 1];
+  strcpy(path, absolutePath);
+  for (int i = 0; path[i] != '\0'; i++) {
+    if (path[i] == '/') depth++;
+  }
+
+  name = new char* [depth];
+  for (int i = 0; i < depth; i++) {
+    ASSERT(absolutePath[0] == '/'); // all absolute path should start with a '/'
+    name[i] = new char[FileNameMaxLen + 1];
+
+    int j = 1;
+    for (; absolutePath[j] != '/' && absolutePath[j] != '\0'; j++)
+      name[i][j - 1] = absolutePath[j];
+    absolutePath = absolutePath + j;
+  }
+}
+
+AbsolutePath::~AbsolutePath() {
+  delete[] path;
+  for (int i = 0; i < depth; i++)
+    delete[] name[i];
+  delete[] name;
+}
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -109,6 +137,22 @@ int Directory::Find(char *name) {
   return -1;
 }
 
+int Directory::FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& isDirectory) {
+  int i = FindIndex(absolutePath->name[depth]);
+  if (i != -1) {
+    if (depth == absolutePath->depth - 1) {
+      isDirectory = table[i].isDirectory;
+      return table[i].sector;
+    } else {
+      Directory* dir = new Directory(NumDirEntries);
+      OpenFile* dirFile = new OpenFile(table[i].sector);
+      dir->FetchFrom(dirFile);
+      return dir->FindByAbsolutePath(absolutePath, depth + 1, isDirectory);
+    }
+  }
+  return -1;
+}
+
 //----------------------------------------------------------------------
 // Directory::Add
 // 	Add a file into the directory.  Return TRUE if successful;
@@ -132,6 +176,36 @@ bool Directory::Add(char *name, int newSector) {
       return TRUE;
     }
   return FALSE;  // no space.  Fix when we have extensible files.
+}
+
+bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector) {
+  int i = FindIndex(absolutePath->name[depth]);
+  if (i != -1) { // Name found
+    if (depth == absolutePath->depth - 1) { // File found
+      // File already exists 
+      return false;
+    }
+
+    // Directory found
+    Directory* dir = new Directory(NumDirEntries);
+    OpenFile* dirFile = new OpenFile(table[i].sector);
+    dir->FetchFrom(dirFile);
+    bool ok = dir->AddByAbsolutePath(absolutePath, depth + 1, newSector);
+    dir->WriteBack(dirFile);
+    return ok;
+  } else { // Name not found
+    if (depth == absolutePath->depth - 1) { // File not found
+      for (int j = 0; j < tableSize; j++) {
+        if (!table[j].inUse) {
+          table[j].inUse = true;
+          strncpy(table[j].name, absolutePath->name[depth], FileNameMaxLen);
+          table[j].sector = newSector;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
 
 //----------------------------------------------------------------------
