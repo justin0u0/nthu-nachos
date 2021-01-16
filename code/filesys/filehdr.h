@@ -46,31 +46,38 @@ public:
 	FileHeader(); // dummy constructor to keep valgrind happy
 	~FileHeader();
 
-	bool Allocate(PersistentBitmap *bitMap, int fileSize); // Initialize a file header,
-														   //  including allocating space
-														   //  on disk for the file data
+	// DEPRECATED: Initialize a file header, including allocating space on disk for the file data
+	bool Allocate(PersistentBitmap *bitMap, int fileSize);
 
-	bool AllocateMultiLevel(PersistentBitmap *bitMap, int fileSize); // Initialize multi-level file header
+	// Initialize multi-level file header
+	bool AllocateMultiLevel(PersistentBitmap *bitMap, int fileSize);
 
-	int GetSectorNeedsByLevel(int level); // Return how many sectors does the level need by given fileSize
+	// Return how many sectors does the level need by given fileSize
+	int GetSectorNeedsByLevel(int level);
 
-	void RecursivelyAllocate(PersistentBitmap* bitmap, bool isRightMost); // FindAndSet recursively
+	// FindAndSet recursively
+	void RecursivelyAllocate(PersistentBitmap* bitmap, bool isRightMost);
 
-	void Deallocate(PersistentBitmap *bitMap);			   // De-allocate this file's
-														   //  data blocks
+	// DEPRECATED: De-allocate this file's data blocks
+	void Deallocate(PersistentBitmap *bitMap);
 
-	void FetchFrom(int sectorNumber); // Initialize file header from disk
-	void WriteBack(int sectorNumber); // Write modifications to file header
-									  //  back to disk
+	// De-allocate the file's data blocks
+	void DeallocateMultiLevel(PersistentBitmap *bitMap);
 
-	int ByteToSector(int offset); // Convert a byte offset into the file
-								  // to the disk sector containing
-								  // the byte
+	// Initialize file header from disk
+	void FetchFrom(int sectorNumber);
 
-	int FileLength(); // Return the length of the file
-					  // in bytes
+	// Write modifications to file header back to disk
+	void WriteBack(int sectorNumber);
 
-	void Print(); // Print the contents of the file.
+	// Convert a byte offset into the file to the disk sector containing the byte
+	int ByteToSector(int offset);
+
+	// Return the length of the file in bytes
+	int FileLength();
+
+	// Print the contents of the file.
+	void Print();
 
 private:
 	/*

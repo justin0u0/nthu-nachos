@@ -137,13 +137,13 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 	if (freeMap->NumClear() < totalSectors)
 		return FALSE; // not enough space
 
-	RecursivelyAllocate(freeMap, true, fileSize);
+	RecursivelyAllocate(freeMap, true);
 	return TRUE;
 }
 
 //----------------------------------------------------------------------
 // FileHeader::RecursivelyAllocate
-// 
+//
 //----------------------------------------------------------------------
 void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost) {
 	// DEBUG(dbgFile, "RecursivelyAllocate: level, sectorNeeds = " << level << ' ' << sectorNeeds);
