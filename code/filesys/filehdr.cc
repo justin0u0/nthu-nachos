@@ -310,7 +310,6 @@ void FileHeader::PrintContentMultiLevel(int& k, bool isRightMost) {
 	}
 
 	for (int i = 0; i < sectors; i++) {
-		printf("%d ", dataSectors[i]);
 		if (level != 1) {
 			FileHeader* fileHeader = new FileHeader;
 			fileHeader->FetchFrom(dataSectors[i]);
