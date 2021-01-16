@@ -90,7 +90,7 @@ public:
 
 	bool Create(char *name, int initialSize); // Create a file (UNIX creat)
 
-	bool CreateDirectory(char *name);
+	void CreateDirectory(char *name);
 
 	OpenFile *Open(char *name); // Open a file (UNIX open)
 

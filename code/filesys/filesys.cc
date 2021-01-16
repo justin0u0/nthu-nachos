@@ -218,7 +218,7 @@ bool FileSystem::Create(char *name, int initialSize) {
   return success;
 }
 
-bool FileSystem::CreateDirectory(char *name) {
+void FileSystem::CreateDirectory(char *name) {
   Directory* directory;
   PersistentBitmap *freeMap = new PersistentBitmap(freeMapFile, NumSectors);
 
@@ -233,7 +233,8 @@ bool FileSystem::CreateDirectory(char *name) {
   }
 
   int sector = freeMap->FindAndSet();
-  return directory->AddByAbsolutePath(absolutePath, 0, sector);
+  directory->AddByAbsolutePath(absolutePath, 0, sector);
+  directory->WriteBack(directoryFile);
 }
 
 //----------------------------------------------------------------------
