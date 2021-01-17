@@ -267,8 +267,12 @@ OpenFile *FileSystem::Open(char *name) {
   int sector;
 
   DEBUG(dbgFile, "Opening file" << name);
+
+  AbsolutePath* absolutePath = new AbsolutePath(name);
+  bool isDirectory = false;
   directory->FetchFrom(directoryFile);
-  sector = directory->Find(name);
+  sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
+  ASSERT(isDirectory == false); // Should only open a file
   if (sector >= 0)
     openFile = new OpenFile(sector);  // name was found in directory
   delete directory;

@@ -257,12 +257,14 @@ void Directory::RecursivelyList(int depth) {
       printf("%s %s\n", (table[i].isDirectory ? "[D]" : "[F]"), table[i].name);
 
       // Recursive
-      Directory* dir = new Directory(NumDirEntries);
-      OpenFile* dirFile = new OpenFile(table[i].sector);
-      dir->FetchFrom(dirFile);
-      dir->RecursivelyList(depth + 1);
-      delete dirFile;
-      delete dir;
+      if (table[i].isDirectory) {
+        Directory* dir = new Directory(NumDirEntries);
+        OpenFile* dirFile = new OpenFile(table[i].sector);
+        dir->FetchFrom(dirFile);
+        dir->RecursivelyList(depth + 1);
+        delete dirFile;
+        delete dir;
+      }
     }
   }
 }

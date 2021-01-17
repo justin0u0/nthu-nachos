@@ -1,2 +1,2 @@
 code/build.linux/*.o
-test/code/DISK_0
+code/test/DISK_0
