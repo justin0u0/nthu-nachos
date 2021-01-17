@@ -354,51 +354,6 @@ bool FileSystem::Remove(char *name, bool isRecursive) {
   return TRUE;
 }
 
-/*
-bool FileSystem::RemoveRecursively(char* name) {
-  Directory* directory = new Directory(NumDirEntries);
-  directory->FetchFrom(directoryFile);
-
-  PersistentBitmap* freeMap = new PersistentBitmap(freeMapFile, NumSectors);
-
-  AbsolutePath* absolutePath = new AbsolutePath(name);
-  bool isDirectory = false;
-  int sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
-  int upperLevelSector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
-  ASSERT(sector != -1); // Directory or file not found
-
-  if (!isDirectory) { // Is file
-    return Remove(name);
-  }
-
-  OpenFile* dirFile = new OpenFile(sector);
-  directory->FetchFrom(dirFile); // Set directory to the delete target
-
-  // Remove everything under directory
-  directory->RemoveAll(freeMap);
-  // Remove directory itself
-  FileHeader* fileHeader = new FileHeader;
-  fileHeader->FetchFrom(sector);
-  fileHeader->DeallocateMultiLevel(freeMap, true);
-  freeMap->Clear(sector);
-
-  // Update upper-level directory
-  OpenFile* writeBackFile = new OpenFile(upperLevelSector);
-  directory->FetchFrom(writeBackFile); // Set directory to upper-level directory
-  directory->Remove(absolutePath->GetLastName());
-
-  directory->WriteBack(writeBackFile);
-  freeMap->WriteBack(freeMapFile);
-
-  delete writeBackFile;
-  delete fileHeader;
-  delete dirFile;
-  delete absolutePath;
-  delete freeMap;
-  delete directory;
-}
-*/
-
 //----------------------------------------------------------------------
 // FileSystem::List
 // 	List all the files in the file system directory.
