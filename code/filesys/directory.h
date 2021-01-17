@@ -84,6 +84,8 @@ public:
 
   bool Remove(char *name);  // Remove a file from the directory
 
+  void RemoveAll(PersistentBitmap* freeMap); // Remove everything under the directory
+
   void List();   // Print the names of all the files in the directory
 
   void RecursivelyList(int depth); // Recursively print the name of all files in the directory

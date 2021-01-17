@@ -355,6 +355,43 @@ bool FileSystem::Remove(char *name) {
   return TRUE;
 }
 
+bool FileSystem::RemoveDirectory(char* name) {
+  Directory* directory = new Directory(NumDirEntries);
+  directory->FetchFrom(directoryFile);
+
+  PersistentBitmap* freeMap = new PersistentBitmap(freeMapFile, NumSectors);
+
+  AbsolutePath* absolutePath = new AbsolutePath(name);
+  int sector = absolutePath->GetSector(directory, DirectorySector);
+  ASSERT(sector != -1); // Directory not found
+  OpenFile* dirFile = new OpenFile(sector);
+  directory->FetchFrom(dirFile); // Set directory to the delete target
+
+  // Remove everything under directory
+  directory->RemoveAll(freeMap);
+  // Remove directory itself
+  FileHeader* fileHeader = new FileHeader;
+  fileHeader->FetchFrom(sector);
+  fileHeader->DeallocateMultiLevel(freeMap, true);
+  freeMap->Clear(sector);
+
+  // Update upper-level directory
+  sector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
+  OpenFile* writeBackFile = new OpenFile(sector);
+  directory->FetchFrom(writeBackFile); // Set directory to upper-level directory
+  directory->Remove(absolutePath->GetLastName());
+
+  directory->WriteBack(writeBackFile);
+  freeMap->WriteBack(freeMapFile);
+
+  delete writeBackFile;
+  delete fileHeader;
+  delete dirFile;
+  delete absolutePath;
+  delete freeMap;
+  delete directory;
+}
+
 //----------------------------------------------------------------------
 // FileSystem::List
 // 	List all the files in the file system directory.
