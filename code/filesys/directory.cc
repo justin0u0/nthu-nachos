@@ -178,19 +178,18 @@ bool Directory::Add(char *name, int newSector) {
   return FALSE;  // no space.  Fix when we have extensible files.
 }
 
-bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector) {
+bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector, bool isDirectory) {
   int i = FindIndex(absolutePath->name[depth]);
   if (i != -1) { // Name found
-    if (depth == absolutePath->depth - 1) { // File found
-      // File already exists 
-      return false;
+    if (depth == absolutePath->depth - 1) {
+      return false; // Already exists
     }
 
     // Directory found
     Directory* dir = new Directory(NumDirEntries);
     OpenFile* dirFile = new OpenFile(table[i].sector);
     dir->FetchFrom(dirFile);
-    bool ok = dir->AddByAbsolutePath(absolutePath, depth + 1, newSector);
+    bool ok = dir->AddByAbsolutePath(absolutePath, depth + 1, newSector, isDirectory);
     dir->WriteBack(dirFile);
     return ok;
   } else { // Name not found
@@ -198,9 +197,9 @@ bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int new
       for (int j = 0; j < tableSize; j++) {
         if (!table[j].inUse) {
           table[j].inUse = true;
+          table[j].isDirectory = isDirectory;
           strncpy(table[j].name, absolutePath->name[depth], FileNameMaxLen);
           table[j].sector = newSector;
-          return true;
         }
       }
     }

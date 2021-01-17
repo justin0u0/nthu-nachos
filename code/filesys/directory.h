@@ -75,7 +75,7 @@ public:
 
   bool Add(char *name, int newSector);  // Add a file name into the directory
 
-  bool AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector);
+  bool AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector, bool isDirectory);
 
   bool Remove(char *name);  // Remove a file from the directory
 

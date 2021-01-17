@@ -232,7 +232,7 @@ void FileSystem::CreateDirectory(char *name) {
   ASSERT(found == -1); // Directory already exists
 
   int sector = freeMap->FindAndSet();
-  directory->AddByAbsolutePath(absolutePath, 0, sector);
+  ASSERT(directory->AddByAbsolutePath(absolutePath, 0, sector, true));
   directory->WriteBack(directoryFile);
 }
 
