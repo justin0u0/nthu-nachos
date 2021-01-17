@@ -73,7 +73,9 @@ int AbsolutePath::GetUpperLevelSector(Directory* rootDirectory, int rootSector) 
   upperLevelPath[i] = '\0';
   AbsolutePath* upperLevelAbsolutePath = new AbsolutePath(upperLevelPath);
   bool isDirectory = false;
-  return rootDirectory->FindByAbsolutePath(upperLevelAbsolutePath, 0, isDirectory);
+  int res = rootDirectory->FindByAbsolutePath(upperLevelAbsolutePath, 0, isDirectory);
+  delete upperLevelAbsolutePath;
+  return res;
 }
 
 char* AbsolutePath::GetLastName() {
@@ -184,7 +186,10 @@ int Directory::FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& i
         DEBUG(dbgFile, "FindByAbsolutePath: ");
         dir->List();
       }
-      return dir->FindByAbsolutePath(absolutePath, depth + 1, isDirectory);
+      int res = dir->FindByAbsolutePath(absolutePath, depth + 1, isDirectory);
+      delete dirFile;
+      delete dir;
+      return res;
     }
   }
   return -1;
@@ -253,6 +258,7 @@ void Directory::RemoveAll(PersistentBitmap* freeMap) {
       fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
       freeMap->Clear(table[i].sector);        // remove header block
       table[i].inUse = false;
+      delete fileHdr;
     }
   }
 }

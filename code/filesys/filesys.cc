@@ -260,6 +260,7 @@ void FileSystem::CreateDirectory(char *name) {
   directory->WriteBack(dirFile);
   freeMap->WriteBack(freeMapFile);
 
+  delete absolutePath;
   delete dirFile;
   delete directory;
   delete freeMap;
@@ -362,8 +363,15 @@ bool FileSystem::RemoveDirectory(char* name) {
   PersistentBitmap* freeMap = new PersistentBitmap(freeMapFile, NumSectors);
 
   AbsolutePath* absolutePath = new AbsolutePath(name);
-  int sector = absolutePath->GetSector(directory, DirectorySector);
-  ASSERT(sector != -1); // Directory not found
+  bool isDirectory = false;
+  int sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
+  int upperLevelSector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
+  ASSERT(sector != -1); // Directory or file not found
+
+  if (!isDirectory) { // Is file
+    return Remove(name);
+  }
+
   OpenFile* dirFile = new OpenFile(sector);
   directory->FetchFrom(dirFile); // Set directory to the delete target
 
@@ -376,8 +384,7 @@ bool FileSystem::RemoveDirectory(char* name) {
   freeMap->Clear(sector);
 
   // Update upper-level directory
-  sector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
-  OpenFile* writeBackFile = new OpenFile(sector);
+  OpenFile* writeBackFile = new OpenFile(upperLevelSector);
   directory->FetchFrom(writeBackFile); // Set directory to upper-level directory
   directory->Remove(absolutePath->GetLastName());
 

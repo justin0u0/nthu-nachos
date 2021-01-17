@@ -304,7 +304,7 @@ void FileHeader::Print()
 	PrintContentMultiLevel(k, true);
 	*/
 
-	printf("FileHeader. Total sectors used: %d\n", GetTotalSectorsUsed(true) + 1);
+	printf("FileHeader. Total data sectors used: %d. Total sectors used: %d.\n", numSectors, GetTotalSectorsUsed(true) + 1);
 }
 
 //----------------------------------------------------------------------

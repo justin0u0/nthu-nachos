@@ -18,6 +18,7 @@
 #define DIRECTORY_H
 
 #include "openfile.h"
+#include "pbitmap.h"
 
 #define FileNameMaxLen 9  // for simplicity, we assume file names are <= 9 characters long
 #define AbsolutePathMaxLen 255
