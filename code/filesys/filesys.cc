@@ -232,6 +232,13 @@ void FileSystem::CreateDirectory(char *name) {
   ASSERT(found == -1); // Directory already exists
 
   int sector = freeMap->FindAndSet();
+
+  // Create directory file
+  FileHeader* dirHdr = new FileHeader;
+  ASSERT(dirHdr->AllocateMultiLevel(freeMap, DirectoryFileSize));
+  dirHdr->WriteBack(sector);
+
+  // Add it to the right place
   ASSERT(directory->AddByAbsolutePath(absolutePath, 0, sector, true));
   directory->WriteBack(directoryFile);
 }
