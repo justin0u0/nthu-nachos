@@ -164,6 +164,7 @@ void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost
 			fileHeader->numSectors = this->numSectors;
 			fileHeader->RecursivelyAllocate(freeMap, (isRightMost && (i == sectorNeeds - 1)));
 			fileHeader->WriteBack(dataSectors[i]);
+			delete fileHeader;
 		}
 	}
 }
@@ -204,6 +205,7 @@ void FileHeader::DeallocateMultiLevel(PersistentBitmap *freeMap, bool isRightMos
 			FileHeader* fileHeader = new FileHeader;
 			fileHeader->FetchFrom(dataSectors[i]);
 			fileHeader->DeallocateMultiLevel(freeMap, (isRightMost && (i == sectors - 1)));
+			delete fileHeader;
 		}
 		freeMap->Clear(dataSectors[i]);
 	}
@@ -273,6 +275,7 @@ int FileHeader::ByteToSector(int offset)
 		fileHeader->FetchFrom(dataSectors[offset / totalSectorSize]);
 		int sector = fileHeader->ByteToSector(offset % totalSectorSize);
 		// DEBUG(dbgFile, "ByteToSector: sector = " << sector);
+		delete fileHeader;
 		return sector;
 	}
 }
@@ -323,6 +326,7 @@ void FileHeader::PrintContentMultiLevel(int& k, bool isRightMost) {
 			FileHeader* fileHeader = new FileHeader;
 			fileHeader->FetchFrom(dataSectors[i]);
 			fileHeader->PrintContentMultiLevel(k, (isRightMost && i == sectors - 1));
+			delete fileHeader;
 		} else {
 			char *data = new char[SectorSize];
 			kernel->synchDisk->ReadSector(dataSectors[i], data);
@@ -356,6 +360,7 @@ int FileHeader::GetTotalSectorsUsed(bool isRightMost) {
 			FileHeader* fileHeader = new FileHeader;
 			fileHeader->FetchFrom(dataSectors[i]);
 			totalSectors += fileHeader->GetTotalSectorsUsed((isRightMost && i == sectors - 1));
+			delete fileHeader;
 		}
 	}
 	return totalSectors;
