@@ -304,10 +304,7 @@ bool FileSystem::Remove(char *name) {
   directory->FetchFrom(directoryFile);
 
   AbsolutePath* dirPath = new AbsolutePath(name);
-  int sector = dirPath->GetSector(directory); // Get sector of file
-  if (debug->IsEnabled('f')) {
-    cout << "GET SECTOR = " << sector << endl;
-  }
+  int sector = dirPath->GetSector(directory, DirectorySector); // Get sector of file
 
   // Change directory to the last level directory
   int dirSector = dirPath->GetUpperLevelSector(directory, DirectorySector); // Get the last level directory sector
@@ -329,15 +326,7 @@ bool FileSystem::Remove(char *name) {
   }
   fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
   freeMap->Clear(sector);        // remove header block
-  if (debug->IsEnabled('f')) {
-    cout << "Start remove file from directory" << endl;
-    directory->List();
-  }
   directory->Remove(dirPath->name[dirPath->depth - 1]);
-  if (debug->IsEnabled('f')) {
-    cout << "End remove file from directory" << endl;
-    directory->List();
-  }
   DEBUG(dbgFile, "End deallocate multi-level");
   if (debug->IsEnabled('f')) {
     freeMap->Print();
@@ -362,21 +351,19 @@ void FileSystem::List(char* listDirectoryName, bool isRecursive) {
   Directory *directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
-  bool isDirectory = true;
-  if (listDirectoryName[0] == '/' && listDirectoryName[1] == '\0') {
-    // Root directory
-  } else {
-    AbsolutePath* absolutePath = new AbsolutePath(listDirectoryName);
-    int sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
-    ASSERT(isDirectory == true); // Should only list directory, not file
-    OpenFile* dirFile = new OpenFile(sector);
-    directory->FetchFrom(dirFile);
-  }
+  AbsolutePath* absolutePath = new AbsolutePath(listDirectoryName);
+  int sector = absolutePath->GetSector(directory, DirectorySector);
+  OpenFile* dirFile = new OpenFile(sector);
+  directory->FetchFrom(dirFile);
+
   if (isRecursive) {
     directory->RecursivelyList(0);
   } else {
     directory->List();
   }
+
+  delete dirFile;
+  delete absolutePath;
   delete directory;
 }
 

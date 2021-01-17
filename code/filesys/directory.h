@@ -34,8 +34,8 @@ public:
   AbsolutePath(char* absolutePath);
   ~AbsolutePath();
 
-  int GetSector(Directory *root); // Get sector by path
-  int GetUpperLevelSector(Directory* root, int rootSector); // Get sector by upper level of path, ex: path=/dir1/dir2/test then get /dir1/dir2
+  int GetSector(Directory *rootDirectory, int rootSector); // Get sector by path
+  int GetUpperLevelSector(Directory* rootDirectory, int rootSector); // Get sector by upper level of path, ex: path=/dir1/dir2/test then get /dir1/dir2
 };
 
 // The following class defines a "directory entry", representing a file
