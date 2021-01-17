@@ -190,14 +190,17 @@ bool FileSystem::Create(char *name, int initialSize) {
   directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
-  if (directory->Find(name) != -1)
+  AbsolutePath* absolutePath = new AbsolutePath(name);
+  bool isDirectory = false;
+
+  if (directory->FindByAbsolutePath(absolutePath, 0, isDirectory) != -1)
     success = FALSE;  // file is already in directory
   else {
     freeMap = new PersistentBitmap(freeMapFile, NumSectors);
     sector = freeMap->FindAndSet();  // find a sector to hold the file header
     if (sector == -1)
       success = FALSE;  // no free block for file header
-    else if (!directory->Add(name, sector))
+    else if (!directory->AddByAbsolutePath(absolutePath, 0, sector, false))
       success = FALSE;  // no space in directory
     else {
       hdr = new FileHeader;
