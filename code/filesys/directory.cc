@@ -171,7 +171,7 @@ int Directory::Find(char *name) {
 }
 
 int Directory::FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& isDirectory) {
-  int i = FindIndex(absolutePath->name[depth]);
+  int i = FindIndex(absolutePath->GetNameByDepth(depth));
   if (i != -1) {
     if (depth == absolutePath->depth - 1) {
       isDirectory = table[i].isDirectory;
@@ -218,7 +218,7 @@ bool Directory::Add(char *name, int newSector, bool isDirectory) {
 }
 
 bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector, bool isDirectory) {
-  int i = FindIndex(absolutePath->name[depth]);
+  int i = FindIndex(absolutePath->GetNameByDepth(depth));
   if (i != -1) { // Name found
     if (depth == absolutePath->depth - 1) {
       return false; // Already exists
@@ -237,7 +237,7 @@ bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int new
         if (!table[j].inUse) {
           table[j].inUse = true;
           table[j].isDirectory = isDirectory;
-          strncpy(table[j].name, absolutePath->name[depth], FileNameMaxLen);
+          strncpy(table[j].name, absolutePath->GetNameByDepth(depth), FileNameMaxLen);
           table[j].sector = newSector;
           return true;
         }
@@ -307,12 +307,14 @@ void Directory::RecursivelyList(int depth) {
 void Directory::Print() {
   FileHeader *hdr = new FileHeader;
 
-  printf("Directory contents:\n");
+  printf("\n\nDirectory contents:\n");
   for (int i = 0; i < tableSize; i++)
     if (table[i].inUse) {
-      printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
+      printf("=============================\n");
+      printf("File Name: %s\n", table[i].name);
       hdr->FetchFrom(table[i].sector);
       hdr->Print();
+      printf("=============================\n");
     }
   printf("\n");
   delete hdr;

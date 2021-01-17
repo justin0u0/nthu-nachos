@@ -299,8 +299,10 @@ void FileHeader::Print()
 
 	printf("FileHeader contents.  File size: %d\n", numBytes);
 
+	/*
 	printf("\nFile contents:\n");
 	PrintContentMultiLevel(k, true);
+	*/
 
 	printf("FileHeader. Total sectors used: %d\n", GetTotalSectorsUsed(true) + 1);
 }

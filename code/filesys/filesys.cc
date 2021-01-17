@@ -190,17 +190,21 @@ bool FileSystem::Create(char *name, int initialSize) {
   directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
+  // Get the last directory
   AbsolutePath* absolutePath = new AbsolutePath(name);
-  bool isDirectory = false;
+  int dirSector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
+  ASSERT(dirSector != -1);
+  OpenFile* dirFile = new OpenFile(dirSector);
+  directory->FetchFrom(dirFile);
 
-  if (directory->FindByAbsolutePath(absolutePath, 0, isDirectory) != -1)
+  if (absolutePath->GetSector(directory, DirectorySector) != -1) {
     success = FALSE;  // file is already in directory
-  else {
+  } else {
     freeMap = new PersistentBitmap(freeMapFile, NumSectors);
     sector = freeMap->FindAndSet();  // find a sector to hold the file header
     if (sector == -1)
       success = FALSE;  // no free block for file header
-    else if (!directory->AddByAbsolutePath(absolutePath, 0, sector, false))
+    else if (!directory->Add(absolutePath->GetLastName(), sector, false))
       success = FALSE;  // no space in directory
     else {
       hdr = new FileHeader;
@@ -210,13 +214,16 @@ bool FileSystem::Create(char *name, int initialSize) {
         success = TRUE;
         // everthing worked, flush all changes back to disk
         hdr->WriteBack(sector);
-        directory->WriteBack(directoryFile);
+        directory->WriteBack(dirFile);
         freeMap->WriteBack(freeMapFile);
       }
       delete hdr;
     }
     delete freeMap;
   }
+
+  delete dirFile;
+  delete absolutePath;
   delete directory;
   return success;
 }
