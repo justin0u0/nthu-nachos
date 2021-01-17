@@ -126,7 +126,7 @@ FileSystem::FileSystem(bool format) {
 
     if (debug->IsEnabled('f')) {
       freeMap->Print();
-      directory->Print();
+      directory->Print(0);
     }
     delete freeMap;
     delete directory;
@@ -407,7 +407,7 @@ void FileSystem::Print() {
   freeMap->Print();
 
   directory->FetchFrom(directoryFile);
-  directory->Print();
+  directory->Print(0);
 
   delete bitHdr;
   delete dirHdr;

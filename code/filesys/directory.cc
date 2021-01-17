@@ -217,36 +217,6 @@ bool Directory::Add(char *name, int newSector, bool isDirectory) {
   return FALSE;  // no space.  Fix when we have extensible files.
 }
 
-bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector, bool isDirectory) {
-  int i = FindIndex(absolutePath->GetNameByDepth(depth));
-  if (i != -1) { // Name found
-    if (depth == absolutePath->depth - 1) {
-      return false; // Already exists
-    }
-
-    // Directory found
-    Directory* dir = new Directory(NumDirEntries);
-    OpenFile* dirFile = new OpenFile(table[i].sector);
-    dir->FetchFrom(dirFile);
-    bool ok = dir->AddByAbsolutePath(absolutePath, depth + 1, newSector, isDirectory);
-    dir->WriteBack(dirFile);
-    return ok;
-  } else { // Name not found
-    if (depth == absolutePath->depth - 1) { // File not found
-      for (int j = 0; j < tableSize; j++) {
-        if (!table[j].inUse) {
-          table[j].inUse = true;
-          table[j].isDirectory = isDirectory;
-          strncpy(table[j].name, absolutePath->GetNameByDepth(depth), FileNameMaxLen);
-          table[j].sector = newSector;
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-}
-
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -304,17 +274,31 @@ void Directory::RecursivelyList(int depth) {
 //	and the contents of each file.  For debugging.
 //----------------------------------------------------------------------
 
-void Directory::Print() {
+void Directory::Print(int depth = 0) {
   FileHeader *hdr = new FileHeader;
 
-  printf("\n\nDirectory contents:\n");
+  if (depth == 0) printf("\n\nDirectory contents:\n");
   for (int i = 0; i < tableSize; i++)
     if (table[i].inUse) {
-      printf("=============================\n");
-      printf("File Name: %s\n", table[i].name);
-      hdr->FetchFrom(table[i].sector);
-      hdr->Print();
-      printf("=============================\n");
+      if (table[i].isDirectory) {
+        for (int j = 0; j < depth; j++) printf("  ");
+        printf("[Start] Directory Name: %s\n", table[i].name);
+        Directory* dir = new Directory(NumDirEntries);
+        OpenFile* dirFile = new OpenFile(table[i].sector);
+        dir->FetchFrom(dirFile);
+        dir->Print(depth + 1);
+        delete dirFile;
+        delete dir;
+        for (int j = 0; j < depth; j++) printf("  ");
+        printf("[End] Directory Name: %s\n\n", table[i].name);
+      } else {
+        for (int j = 0; j < depth; j++) printf("  ");
+        printf("[Start] File Name: %s\n", table[i].name);
+        hdr->FetchFrom(table[i].sector);
+        hdr->Print();
+        for (int j = 0; j < depth; j++) printf("  ");
+        printf("[End] File Name: %s\n\n", table[i].name);
+      }
     }
   printf("\n");
   delete hdr;
