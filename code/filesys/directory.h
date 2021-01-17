@@ -35,9 +35,13 @@ public:
   AbsolutePath(char* absolutePath);
   ~AbsolutePath();
 
-  int GetSector(Directory *rootDirectory, int rootSector); // Get sector by path
-  int GetUpperLevelSector(Directory* rootDirectory, int rootSector); // Get sector by upper level of path, ex: path=/dir1/dir2/test then get /dir1/dir2
-  char* GetLastName(); // Return the last name
+  // Get sector by path
+  int GetSector(Directory *rootDirectory, int rootSector);
+  // Get sector by upper level of path, ex: path=/dir1/dir2/test then get /dir1/dir2
+  int GetUpperLevelSector(Directory* rootDirectory, int rootSector);
+  // Return the last name
+  char* GetLastName();
+  // Return name by depth
   char* GetNameByDepth(int depth);
 };
 
@@ -89,7 +93,7 @@ public:
 
   void List();   // Print the names of all the files in the directory
 
-  void RecursivelyList(int depth); // Recursively print the name of all files in the directory
+  void ListRecursively(int depth); // Recursively print the name of all files in the directory
 
   void Print(int depth);  // Verbose print of the contents
                  //  of the directory -- all the file

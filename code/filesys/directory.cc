@@ -274,7 +274,7 @@ void Directory::List() {
       printf("%s\n", table[i].name);
 }
 
-void Directory::RecursivelyList(int depth) {
+void Directory::ListRecursively(int depth) {
   for (int i = 0; i < tableSize; i++) {
     if (table[i].inUse) { 
       // Print indent
@@ -289,7 +289,7 @@ void Directory::RecursivelyList(int depth) {
         Directory* dir = new Directory(NumDirEntries);
         OpenFile* dirFile = new OpenFile(table[i].sector);
         dir->FetchFrom(dirFile);
-        dir->RecursivelyList(depth + 1);
+        dir->ListRecursively(depth + 1);
         delete dirFile;
         delete dir;
       }

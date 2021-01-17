@@ -96,7 +96,7 @@ public:
 
 	bool Remove(char *name); // Delete a file (UNIX unlink)
 
-	bool RemoveDirectory(char *name); // Recursively remove a directory
+	bool RemoveRecursively(char *name); // Recursively remove a directory or just a file
 
 	void List(char* listDirectoryName, bool isRecursive); // List all the files in the file system
 

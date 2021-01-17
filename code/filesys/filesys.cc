@@ -317,11 +317,11 @@ bool FileSystem::Remove(char *name) {
   directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
-  AbsolutePath* dirPath = new AbsolutePath(name);
-  int sector = dirPath->GetSector(directory, DirectorySector); // Get sector of file
+  AbsolutePath* absolutePath = new AbsolutePath(name);
+  int sector = absolutePath->GetSector(directory, DirectorySector); // Get sector of file
 
   // Change directory to the last level directory
-  int dirSector = dirPath->GetUpperLevelSector(directory, DirectorySector); // Get the last level directory sector
+  int dirSector = absolutePath->GetUpperLevelSector(directory, DirectorySector); // Get the last level directory sector
   dirFile = new OpenFile(dirSector);
   directory->FetchFrom(dirFile);
 
@@ -340,7 +340,7 @@ bool FileSystem::Remove(char *name) {
   }
   fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
   freeMap->Clear(sector);        // remove header block
-  directory->Remove(dirPath->GetLastName());
+  directory->Remove(absolutePath->GetLastName());
   DEBUG(dbgFile, "End deallocate multi-level");
   if (debug->IsEnabled('f')) {
     freeMap->Print();
@@ -352,11 +352,11 @@ bool FileSystem::Remove(char *name) {
   delete directory;
   delete freeMap;
   delete dirFile;
-  delete dirPath;
+  delete absolutePath;
   return TRUE;
 }
 
-bool FileSystem::RemoveDirectory(char* name) {
+bool FileSystem::RemoveRecursively(char* name) {
   Directory* directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
@@ -414,7 +414,7 @@ void FileSystem::List(char* listDirectoryName, bool isRecursive) {
   directory->FetchFrom(dirFile);
 
   if (isRecursive) {
-    directory->RecursivelyList(0);
+    directory->ListRecursively(0);
   } else {
     directory->List();
   }

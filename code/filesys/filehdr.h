@@ -56,7 +56,7 @@ public:
 	int GetSectorNeedsByLevel(int level);
 
 	// FindAndSet recursively
-	void RecursivelyAllocate(PersistentBitmap* bitmap, bool isRightMost);
+	void AllocateRecursively(PersistentBitmap* bitmap, bool isRightMost);
 
 	// DEPRECATED: De-allocate this file's data blocks
 	void Deallocate(PersistentBitmap *bitMap);

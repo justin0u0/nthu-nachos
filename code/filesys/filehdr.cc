@@ -137,16 +137,16 @@ bool FileHeader::AllocateMultiLevel(PersistentBitmap *freeMap, int fileSize)
 	if (freeMap->NumClear() < totalSectors)
 		return FALSE; // not enough space
 
-	RecursivelyAllocate(freeMap, true);
+	AllocateRecursively(freeMap, true);
 	return TRUE;
 }
 
 //----------------------------------------------------------------------
-// FileHeader::RecursivelyAllocate
+// FileHeader::AllocateRecursively
 //
 //----------------------------------------------------------------------
-void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost) {
-	// DEBUG(dbgFile, "RecursivelyAllocate: level, sectorNeeds = " << level << ' ' << sectorNeeds);
+void FileHeader::AllocateRecursively(PersistentBitmap *freeMap, bool isRightMost) {
+	// DEBUG(dbgFile, "AllocateRecursively: level, sectorNeeds = " << level << ' ' << sectorNeeds);
 
 	int sectorNeeds = NumDirect;
 	if (isRightMost && GetSectorNeedsByLevel(level) % NumDirect != 0) {
@@ -162,7 +162,7 @@ void FileHeader::RecursivelyAllocate(PersistentBitmap *freeMap, bool isRightMost
 			fileHeader->level = this->level - 1;
 			fileHeader->numBytes = this->numBytes;
 			fileHeader->numSectors = this->numSectors;
-			fileHeader->RecursivelyAllocate(freeMap, (isRightMost && (i == sectorNeeds - 1)));
+			fileHeader->AllocateRecursively(freeMap, (isRightMost && (i == sectorNeeds - 1)));
 			fileHeader->WriteBack(dataSectors[i]);
 			delete fileHeader;
 		}

@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
 #ifndef FILESYS_STUB
   if (removeFileName != NULL) {
     if (recursiveRemoveFlag) {
-      kernel->fileSystem->RemoveDirectory(removeFileName);
+      kernel->fileSystem->RemoveRecursively(removeFileName);
     } else {
       kernel->fileSystem->Remove(removeFileName);
     }
