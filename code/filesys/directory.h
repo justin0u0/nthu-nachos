@@ -81,8 +81,10 @@ public:
 
   bool RemoveByAbsolutePath(char *path);
 
-  void List();   // Print the names of all the files
-                 //  in the directory
+  void List();   // Print the names of all the files in the directory
+
+  void RecursivelyList(int depth); // Recursively print the name of all files in the directory
+
   void Print();  // Verbose print of the contents
                  //  of the directory -- all the file
                  //  names and their contents.

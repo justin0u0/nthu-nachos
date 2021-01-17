@@ -246,6 +246,27 @@ void Directory::List() {
       printf("%s\n", table[i].name);
 }
 
+void Directory::RecursivelyList(int depth) {
+  for (int i = 0; i < tableSize; i++) {
+    if (table[i].inUse) { 
+      // Print indent
+      for (int j = 0; j < depth; j++)
+        printf("  ");
+
+      // Print file
+      printf("%s %s\n", (table[i].isDirectory ? "[D]" : "[F]"), table[i].name);
+
+      // Recursive
+      Directory* dir = new Directory(NumDirEntries);
+      OpenFile* dirFile = new OpenFile(table[i].sector);
+      dir->FetchFrom(dirFile);
+      dir->RecursivelyList(depth + 1);
+      delete dirFile;
+      delete dir;
+    }
+  }
+}
+
 //----------------------------------------------------------------------
 // Directory::Print
 // 	List all the file names in the directory, their FileHeader locations,

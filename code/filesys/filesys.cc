@@ -331,7 +331,7 @@ bool FileSystem::Remove(char *name) {
 // 	List all the files in the file system directory.
 //----------------------------------------------------------------------
 
-void FileSystem::List(char* listDirectoryName) {
+void FileSystem::List(char* listDirectoryName, bool isRecursive) {
   Directory *directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
@@ -345,7 +345,11 @@ void FileSystem::List(char* listDirectoryName) {
     OpenFile* dirFile = new OpenFile(sector);
     directory->FetchFrom(dirFile);
   }
-  directory->List();
+  if (isRecursive) {
+    directory->RecursivelyList(0);
+  } else {
+    directory->List();
+  }
   delete directory;
 }
 
