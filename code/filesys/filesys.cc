@@ -228,27 +228,34 @@ void FileSystem::CreateDirectory(char *name) {
   directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
-  bool isDirectory = false;
   AbsolutePath* absolutePath = new AbsolutePath(name);
-  int found = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
+  ASSERT(absolutePath->GetSector(directory, DirectorySector) == -1); // Directory already exists
 
-  ASSERT(found == -1); // Directory already exists
-
-  int sector = freeMap->FindAndSet();
-  ASSERT(sector != -1); // Not enough sector
+  // Create a new sector for the new directory
+  int newSector = freeMap->FindAndSet();
+  ASSERT(newSector != -1); // Not enough sector
 
   // Create directory file
   FileHeader* dirHdr = new FileHeader;
   ASSERT(dirHdr->AllocateMultiLevel(freeMap, DirectoryFileSize));
-  dirHdr->WriteBack(sector);
-  OpenFile* dirFile = new OpenFile(sector);
+  dirHdr->WriteBack(newSector);
+  OpenFile* dirFile = new OpenFile(newSector);
   Directory* newDirectory = new Directory(NumDirEntries);
   newDirectory->WriteBack(dirFile);
+  delete dirHdr;
+  delete newDirectory;
 
   // Add it to the right place
-  ASSERT(directory->AddByAbsolutePath(absolutePath, 0, sector, true));
-  directory->WriteBack(directoryFile);
+  int dirSector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
+  dirFile = new OpenFile(dirSector);
+  directory->FetchFrom(dirFile);
+  directory->Add(absolutePath->GetLastName(), newSector, true);
+  directory->WriteBack(dirFile);
   freeMap->WriteBack(freeMapFile);
+
+  delete dirFile;
+  delete directory;
+  delete freeMap;
 }
 
 //----------------------------------------------------------------------
@@ -263,16 +270,15 @@ void FileSystem::CreateDirectory(char *name) {
 
 OpenFile *FileSystem::Open(char *name) {
   Directory *directory = new Directory(NumDirEntries);
+  directory->FetchFrom(directoryFile);
+
   OpenFile *openFile = NULL;
   int sector;
 
   DEBUG(dbgFile, "Opening file" << name);
 
   AbsolutePath* absolutePath = new AbsolutePath(name);
-  bool isDirectory = false;
-  directory->FetchFrom(directoryFile);
-  sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
-  ASSERT(isDirectory == false); // Should only open a file
+  sector = absolutePath->GetSector(directory, DirectorySector);
   if (sector >= 0)
     openFile = new OpenFile(sector);  // name was found in directory
   delete directory;
@@ -326,7 +332,7 @@ bool FileSystem::Remove(char *name) {
   }
   fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
   freeMap->Clear(sector);        // remove header block
-  directory->Remove(dirPath->name[dirPath->depth - 1]);
+  directory->Remove(dirPath->GetLastName());
   DEBUG(dbgFile, "End deallocate multi-level");
   if (debug->IsEnabled('f')) {
     freeMap->Print();

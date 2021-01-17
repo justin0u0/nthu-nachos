@@ -76,6 +76,14 @@ int AbsolutePath::GetUpperLevelSector(Directory* rootDirectory, int rootSector) 
   return rootDirectory->FindByAbsolutePath(upperLevelAbsolutePath, 0, isDirectory);
 }
 
+char* AbsolutePath::GetLastName() {
+  return name[depth - 1];
+}
+
+char* AbsolutePath::GetNameByDepth(int depth) {
+  return name[depth];
+}
+
 //----------------------------------------------------------------------
 // Directory::Directory
 // 	Initialize a directory; initially, the directory is completely
@@ -193,17 +201,19 @@ int Directory::FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& i
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
 
-bool Directory::Add(char *name, int newSector) {
+bool Directory::Add(char *name, int newSector, bool isDirectory) {
   if (FindIndex(name) != -1)
     return FALSE;
 
-  for (int i = 0; i < tableSize; i++)
+  for (int i = 0; i < tableSize; i++) {
     if (!table[i].inUse) {
       table[i].inUse = TRUE;
       strncpy(table[i].name, name, FileNameMaxLen);
       table[i].sector = newSector;
+      table[i].isDirectory = isDirectory;
       return TRUE;
     }
+  }
   return FALSE;  // no space.  Fix when we have extensible files.
 }
 

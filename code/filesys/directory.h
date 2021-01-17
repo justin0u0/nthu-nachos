@@ -36,6 +36,8 @@ public:
 
   int GetSector(Directory *rootDirectory, int rootSector); // Get sector by path
   int GetUpperLevelSector(Directory* rootDirectory, int rootSector); // Get sector by upper level of path, ex: path=/dir1/dir2/test then get /dir1/dir2
+  char* GetLastName(); // Return the last name
+  char* GetNameByDepth(int depth);
 };
 
 // The following class defines a "directory entry", representing a file
@@ -78,7 +80,7 @@ public:
 
   int FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& isDirectory);
 
-  bool Add(char *name, int newSector);  // Add a file name into the directory
+  bool Add(char *name, int newSector, bool isDirectory);  // Add a file name into the directory
 
   bool AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector, bool isDirectory);
 
