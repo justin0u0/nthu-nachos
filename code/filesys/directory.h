@@ -24,6 +24,8 @@
 #define NumDirEntries 64
 #define DirectoryFileSize (sizeof(DirectoryEntry) * NumDirEntries)
 
+class Directory;
+
 class AbsolutePath {
 public:
   char *path;
@@ -31,6 +33,9 @@ public:
   int depth;
   AbsolutePath(char* absolutePath);
   ~AbsolutePath();
+
+  int GetSector(Directory *root); // Get sector by path
+  int GetUpperLevelSector(Directory* root, int rootSector); // Get sector by upper level of path, ex: path=/dir1/dir2/test then get /dir1/dir2
 };
 
 // The following class defines a "directory entry", representing a file
@@ -78,8 +83,6 @@ public:
   bool AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int newSector, bool isDirectory);
 
   bool Remove(char *name);  // Remove a file from the directory
-
-  bool RemoveByAbsolutePath(char *path);
 
   void List();   // Print the names of all the files in the directory
 

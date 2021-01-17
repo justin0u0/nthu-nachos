@@ -57,6 +57,24 @@ AbsolutePath::~AbsolutePath() {
   delete[] name;
 }
 
+int AbsolutePath::GetSector(Directory* root) {
+  bool isDirectory = false;
+  return root->FindByAbsolutePath(this, 0, isDirectory);
+}
+
+int AbsolutePath::GetUpperLevelSector(Directory* root, int rootSector) {
+  if (depth == 1) return rootSector;
+
+  char* upperLevelPath = new char[FileNameMaxLen + 1];
+  strcpy(upperLevelPath, path);
+  int i = strlen(upperLevelPath) - 1;
+  while (upperLevelPath[i] != '/') i--;
+  upperLevelPath[i] = '\0';
+  AbsolutePath* upperLevelAbsolutePath = new AbsolutePath(upperLevelPath);
+  bool isDirectory = false;
+  return root->FindByAbsolutePath(upperLevelAbsolutePath, 0, isDirectory);
+}
+
 //----------------------------------------------------------------------
 // Directory::Directory
 // 	Initialize a directory; initially, the directory is completely

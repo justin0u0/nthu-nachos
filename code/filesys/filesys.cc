@@ -276,6 +276,7 @@ OpenFile *FileSystem::Open(char *name) {
   if (sector >= 0)
     openFile = new OpenFile(sector);  // name was found in directory
   delete directory;
+  delete absolutePath;
   return openFile;  // return NULL if not found
 }
 
@@ -297,11 +298,22 @@ bool FileSystem::Remove(char *name) {
   Directory *directory;
   PersistentBitmap *freeMap;
   FileHeader *fileHdr;
-  int sector;
+  OpenFile* dirFile = directoryFile; // Default open: root directory
 
   directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
-  sector = directory->Find(name);
+
+  AbsolutePath* dirPath = new AbsolutePath(name);
+  int sector = dirPath->GetSector(directory); // Get sector of file
+  if (debug->IsEnabled('f')) {
+    cout << "GET SECTOR = " << sector << endl;
+  }
+
+  // Change directory to the last level directory
+  int dirSector = dirPath->GetUpperLevelSector(directory, DirectorySector); // Get the last level directory sector
+  dirFile = new OpenFile(dirSector);
+  directory->FetchFrom(dirFile);
+
   if (sector == -1) {
     delete directory;
     return FALSE;  // file not found
@@ -314,22 +326,30 @@ bool FileSystem::Remove(char *name) {
   DEBUG(dbgFile, "Start deallocate multi-level");
   if (debug->IsEnabled('f')) {
     freeMap->Print();
-    directory->Print();
   }
   fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
   freeMap->Clear(sector);        // remove header block
-  directory->Remove(name);
+  if (debug->IsEnabled('f')) {
+    cout << "Start remove file from directory" << endl;
+    directory->List();
+  }
+  directory->Remove(dirPath->name[dirPath->depth - 1]);
+  if (debug->IsEnabled('f')) {
+    cout << "End remove file from directory" << endl;
+    directory->List();
+  }
   DEBUG(dbgFile, "End deallocate multi-level");
   if (debug->IsEnabled('f')) {
     freeMap->Print();
-    directory->Print();
   }
 
   freeMap->WriteBack(freeMapFile);      // flush to disk
-  directory->WriteBack(directoryFile);  // flush to disk
+  directory->WriteBack(dirFile);  // flush to disk
   delete fileHdr;
   delete directory;
   delete freeMap;
+  delete dirFile;
+  delete dirPath;
   return TRUE;
 }
 
