@@ -232,15 +232,20 @@ void FileSystem::CreateDirectory(char *name) {
   ASSERT(found == -1); // Directory already exists
 
   int sector = freeMap->FindAndSet();
+  ASSERT(sector != -1); // Not enough sector
 
   // Create directory file
   FileHeader* dirHdr = new FileHeader;
   ASSERT(dirHdr->AllocateMultiLevel(freeMap, DirectoryFileSize));
   dirHdr->WriteBack(sector);
+  OpenFile* dirFile = new OpenFile(sector);
+  Directory* newDirectory = new Directory(NumDirEntries);
+  newDirectory->WriteBack(dirFile);
 
   // Add it to the right place
   ASSERT(directory->AddByAbsolutePath(absolutePath, 0, sector, true));
   directory->WriteBack(directoryFile);
+  freeMap->WriteBack(freeMapFile);
 }
 
 //----------------------------------------------------------------------
@@ -326,10 +331,20 @@ bool FileSystem::Remove(char *name) {
 // 	List all the files in the file system directory.
 //----------------------------------------------------------------------
 
-void FileSystem::List() {
+void FileSystem::List(char* listDirectoryName) {
   Directory *directory = new Directory(NumDirEntries);
-
   directory->FetchFrom(directoryFile);
+
+  bool isDirectory = true;
+  if (listDirectoryName[0] == '/' && listDirectoryName[1] == '\0') {
+    // Root directory
+  } else {
+    AbsolutePath* absolutePath = new AbsolutePath(listDirectoryName);
+    int sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
+    ASSERT(isDirectory == true); // Should only list directory, not file
+    OpenFile* dirFile = new OpenFile(sector);
+    directory->FetchFrom(dirFile);
+  }
   directory->List();
   delete directory;
 }

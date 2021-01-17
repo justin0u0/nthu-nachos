@@ -27,9 +27,11 @@
 #include "debug.h"
 
 AbsolutePath::AbsolutePath(char *absolutePath) {
+  // DEBUG(dbgFile, "AbsolutePath: absolutepath = " << absolutePath);
   depth = 0;
   path = new char[AbsolutePathMaxLen + 1];
   strcpy(path, absolutePath);
+  // DEBUG(dbgFile, "AbsolutePath: path = " << path);
   for (int i = 0; path[i] != '\0'; i++) {
     if (path[i] == '/') depth++;
   }
@@ -42,7 +44,9 @@ AbsolutePath::AbsolutePath(char *absolutePath) {
     int j = 1;
     for (; absolutePath[j] != '/' && absolutePath[j] != '\0'; j++)
       name[i][j - 1] = absolutePath[j];
+    name[i][j - 1] = '\0';
     absolutePath = absolutePath + j;
+    DEBUG(dbgFile, "AbsolutePath: i, name[i] = " << i << ' ' << name[i]);
   }
 }
 
@@ -70,8 +74,10 @@ Directory::Directory(int size) {
   memset(table, 0, sizeof(DirectoryEntry) * size);  // dummy operation to keep valgrind happy
 
   tableSize = size;
-  for (int i = 0; i < tableSize; i++)
+  for (int i = 0; i < tableSize; i++) {
     table[i].inUse = FALSE;
+    table[i].isDirectory = FALSE;
+  }
 }
 
 //----------------------------------------------------------------------
@@ -147,6 +153,10 @@ int Directory::FindByAbsolutePath(AbsolutePath* absolutePath, int depth, bool& i
       Directory* dir = new Directory(NumDirEntries);
       OpenFile* dirFile = new OpenFile(table[i].sector);
       dir->FetchFrom(dirFile);
+      if (debug->IsEnabled('f')) {
+        DEBUG(dbgFile, "FindByAbsolutePath: ");
+        dir->List();
+      }
       return dir->FindByAbsolutePath(absolutePath, depth + 1, isDirectory);
     }
   }
