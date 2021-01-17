@@ -200,6 +200,7 @@ bool Directory::AddByAbsolutePath(AbsolutePath* absolutePath, int depth, int new
           table[j].isDirectory = isDirectory;
           strncpy(table[j].name, absolutePath->name[depth], FileNameMaxLen);
           table[j].sector = newSector;
+          return true;
         }
       }
     }
