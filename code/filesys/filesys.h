@@ -94,7 +94,7 @@ public:
 
 	OpenFile *Open(char *name); // Open a file (UNIX open)
 
-	bool Remove(char *name); // Delete a file (UNIX unlink)
+	bool Remove(char *name, bool isRecursive); // Delete a file (UNIX unlink)
 
 	bool RemoveRecursively(char *name); // Recursively remove a directory or just a file
 

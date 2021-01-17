@@ -308,54 +308,53 @@ OpenFile *FileSystem::Open(char *name) {
 //	"name" -- the text name of the file to be removed
 //----------------------------------------------------------------------
 
-bool FileSystem::Remove(char *name) {
-  Directory *directory;
-  PersistentBitmap *freeMap;
-  FileHeader *fileHdr;
-  OpenFile* dirFile = directoryFile; // Default open: root directory
-
-  directory = new Directory(NumDirEntries);
+bool FileSystem::Remove(char *name, bool isRecursive) {
+  Directory *directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
 
   AbsolutePath* absolutePath = new AbsolutePath(name);
-  int sector = absolutePath->GetSector(directory, DirectorySector); // Get sector of file
-
-  // Change directory to the last level directory
-  int dirSector = absolutePath->GetUpperLevelSector(directory, DirectorySector); // Get the last level directory sector
-  dirFile = new OpenFile(dirSector);
-  directory->FetchFrom(dirFile);
-
+  bool isDirectory = false;
+  int sector = directory->FindByAbsolutePath(absolutePath, 0, isDirectory);
+  int upperLevelSector = absolutePath->GetUpperLevelSector(directory, DirectorySector);
   if (sector == -1) {
+    delete absolutePath;
     delete directory;
     return FALSE;  // file not found
   }
-  fileHdr = new FileHeader;
-  fileHdr->FetchFrom(sector);
 
-  freeMap = new PersistentBitmap(freeMapFile, NumSectors);
+  PersistentBitmap *freeMap = new PersistentBitmap(freeMapFile, NumSectors);
 
-  DEBUG(dbgFile, "Start deallocate multi-level");
-  if (debug->IsEnabled('f')) {
-    freeMap->Print();
-  }
-  fileHdr->DeallocateMultiLevel(freeMap, true);  // remove data blocks
-  freeMap->Clear(sector);        // remove header block
-  directory->Remove(absolutePath->GetLastName());
-  DEBUG(dbgFile, "End deallocate multi-level");
-  if (debug->IsEnabled('f')) {
-    freeMap->Print();
+  if (isRecursive && isDirectory) {
+    // Remove and de-allocate everything under directory
+    OpenFile* dirFile = new OpenFile(sector);
+    directory->FetchFrom(dirFile); // Set directory to the delete target
+    directory->RemoveAll(freeMap);
+    delete dirFile;
   }
 
-  freeMap->WriteBack(freeMapFile);      // flush to disk
-  directory->WriteBack(dirFile);  // flush to disk
-  delete fileHdr;
-  delete directory;
+  // De-allocate the file/directory itself
+  FileHeader *fileHeader = new FileHeader;
+  fileHeader->FetchFrom(sector);
+  fileHeader->DeallocateMultiLevel(freeMap, true);  // remove data blocks
+  freeMap->Clear(sector);
+
+  // Update upper-level directory
+  OpenFile* upperLevelFile = new OpenFile(upperLevelSector);
+  directory->FetchFrom(upperLevelFile); // Set directory to upper-level directory
+  directory->Remove(absolutePath->GetLastName()); // Remove directory
+
+  directory->WriteBack(upperLevelFile); // Flush to disk
+  freeMap->WriteBack(freeMapFile);      // Flush to disk
+
+  delete fileHeader;
+  delete upperLevelFile;
   delete freeMap;
-  delete dirFile;
   delete absolutePath;
+  delete directory;
   return TRUE;
 }
 
+/*
 bool FileSystem::RemoveRecursively(char* name) {
   Directory* directory = new Directory(NumDirEntries);
   directory->FetchFrom(directoryFile);
@@ -398,6 +397,7 @@ bool FileSystem::RemoveRecursively(char* name) {
   delete freeMap;
   delete directory;
 }
+*/
 
 //----------------------------------------------------------------------
 // FileSystem::List
