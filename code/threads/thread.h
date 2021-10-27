@@ -82,7 +82,7 @@ class Thread {
   void *machineState[MachineStateSize];  // all registers except for stackTop
 
  public:
-  Thread(char *debugName, int threadID);  // initialize a Thread
+  Thread(char *debugName, int threadID, int priority);  // initialize a Thread
   ~Thread();                              // deallocate a Thread
                                           // NOTE -- thread being deleted
                                           // must not be running when delete
@@ -126,6 +126,8 @@ class Thread {
   // while executing kernel code.
 
   int userRegisters[NumTotalRegs];  // user-level CPU register state
+
+  int priority;
 
  public:
   void SaveUserState();     // save user-level register state

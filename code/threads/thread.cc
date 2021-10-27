@@ -34,7 +34,7 @@ const int STACK_FENCEPOST = 0xdedbeef;
 //	"threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(char *threadName, int threadID) {
+Thread::Thread(char *threadName, int threadID, int priority) {
   ID = threadID;
   name = threadName;
   stackTop = NULL;
@@ -46,6 +46,9 @@ Thread::Thread(char *threadName, int threadID) {
                              // of machine registers
   }
   space = NULL;
+
+  ASSERT(priority >= 0 && priority < 150);
+  this->priority = priority;
 }
 
 //----------------------------------------------------------------------
@@ -402,7 +405,7 @@ SimpleThread(int which) {
 void Thread::SelfTest() {
   DEBUG(dbgThread, "Entering Thread::SelfTest");
 
-  Thread *t = new Thread("forked thread", 1);
+  Thread *t = new Thread("forked thread", 1, 0);
 
   t->Fork((VoidFunctionPtr)SimpleThread, (void *)1);
   kernel->currentThread->Yield();
