@@ -95,14 +95,17 @@ Scheduler::FindNextToRun() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
   if (!l1Queue->IsEmpty()) {
+		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L1");
     return l1Queue->RemoveFront();
   }
 
   if (!l2Queue->IsEmpty()) {
+		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L2");
     return l2Queue->RemoveFront();
   }
 
   if (!l3Queue->IsEmpty()) {
+		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L3");
     return l3Queue->RemoveFront();
   }
 
@@ -148,6 +151,9 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
   nextThread->setStatus(RUNNING);      // nextThread is now running
 
   DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
+	DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID()
+    << "] is now selected for execution, thread [" << oldThread->getID() << "] is replaced, and it has executed ["
+    << kernel->stats->totalTicks - oldThread->getStartTick() << "] ticks");
 
   // This is a machine-dependent assembly language routine defined
   // in switch.s.  You may have to think
