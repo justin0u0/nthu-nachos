@@ -41,14 +41,14 @@ Thread::Thread(char *threadName, int threadID, int priority) {
   stack = NULL;
   status = JUST_CREATED;
   for (int i = 0; i < MachineStateSize; i++) {
-    machineState[i] = NULL;  // not strictly necessary, since
-                             // new thread ignores contents
-                             // of machine registers
+    // not strictly necessary, since new thread ignores contents of machine registers
+    machineState[i] = NULL;
   }
   space = NULL;
 
   ASSERT(priority >= 0 && priority < 150);
   this->priority = priority;
+  burstTime = 0.0;
 }
 
 //----------------------------------------------------------------------

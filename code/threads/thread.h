@@ -108,6 +108,22 @@ class Thread {
   void Print() { cout << name; }
   void SelfTest();  // test whether thread impl is working
 
+  int getPriority() {
+    return priority;
+  }
+
+  void setPriority(int priority) {
+    this->priority = priority;
+  }
+
+  double getBurstTime() {
+    return burstTime;
+  }
+
+  void setBurstTime(double burstTime) {
+    this->burstTime = burstTime;
+  }
+
  private:
   // some of the private data for this class is listed above
 
@@ -127,6 +143,7 @@ class Thread {
 
   int userRegisters[NumTotalRegs];  // user-level CPU register state
 
+  double burstTime;
   int priority;
 
  public:
