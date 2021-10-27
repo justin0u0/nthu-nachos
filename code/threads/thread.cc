@@ -48,7 +48,9 @@ Thread::Thread(char *threadName, int threadID, int priority) {
 
   ASSERT(priority >= 0 && priority < 150);
   this->priority = priority;
-  burstTime = 0.0;
+
+  burstTime = 0;
+  predictedBurstTime = 0.0;
 }
 
 //----------------------------------------------------------------------
@@ -198,6 +200,8 @@ void Thread::Yield() {
 
   DEBUG(dbgThread, "Yielding thread: " << name);
 
+  this->setBurstTime(this->getBurstTime() + (kernel->stats->totalTicks - this->getStartTick()));
+
   nextThread = kernel->scheduler->FindNextToRun();
   if (nextThread != NULL) {
     kernel->scheduler->ReadyToRun(this);
@@ -236,6 +240,16 @@ void Thread::Sleep(bool finishing) {
   DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
   status = BLOCKED;
+
+  this->setBurstTime(this->getBurstTime() + (kernel->stats->totalTicks - this->getStartTick()));
+  double oldPredictedBurstTime = this->getPredictedBurstTime();
+  this->setPredictedBurstTime(0.5 * oldPredictedBurstTime + 0.5 * this->getBurstTime());
+
+  DEBUG(dbgScheduler, "[D] Tick [" << kernel->stats->totalTicks << "]: Thread [" << this->ID
+    << "] update approximate burst time, from [" << oldPredictedBurstTime << "], add [" << this->getBurstTime() << "], to [" << this->getPredictedBurstTime() << "]");
+
+  this->setBurstTime(0);
+
   //cout << "debug Thread::Sleep " << name << "wait for Idle\n";
   while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {
     kernel->interrupt->Idle();  // no one to run, wait for an interrupt

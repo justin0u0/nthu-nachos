@@ -116,12 +116,28 @@ class Thread {
     this->priority = priority;
   }
 
-  double getBurstTime() {
+  int getBurstTime() {
     return burstTime;
   }
 
-  void setBurstTime(double burstTime) {
+  void setBurstTime(int burstTime) {
     this->burstTime = burstTime;
+  }
+
+  double getPredictedBurstTime() {
+    return predictedBurstTime;
+  }
+
+  void setPredictedBurstTime(double predictedBurstTime) {
+    this->predictedBurstTime = predictedBurstTime;
+  }
+
+  int getStartTick() {
+    return startTick;
+  }
+
+  void setStartTick(int startTick) {
+    this->startTick = startTick;
   }
 
  private:
@@ -143,7 +159,9 @@ class Thread {
 
   int userRegisters[NumTotalRegs];  // user-level CPU register state
 
-  double burstTime;
+  double predictedBurstTime;
+  int burstTime;
+  int startTick;
   int priority;
 
  public:
