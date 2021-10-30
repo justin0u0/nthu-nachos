@@ -211,6 +211,8 @@ void Scheduler::CheckToBeDestroyed() {
 //----------------------------------------------------------------------
 void Scheduler::Print() {
   cout << "Ready list contents:\n";
+  l1Queue->Apply(ThreadPrint);
+  l2Queue->Apply(ThreadPrint);
   l3Queue->Apply(ThreadPrint);
 }
 
@@ -316,7 +318,7 @@ bool Scheduler::CheckIfYield() {
 
   // Switch next thread if current thread is l2, l3, or current thread is L1 but longer burst time
   if (!l1Queue->IsEmpty()) {
-    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getBurstTime() > l1Queue->Front()->getBurstTime()));
+    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getPredictedBurstTime() > l1Queue->Front()->getPredictedBurstTime()));
   }
 
   // Switch next thread if current thread is L3
