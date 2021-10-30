@@ -1,0 +1,47 @@
+#!/bin/bash
+
+TC_NORMAL=(\
+"-ep hw3ta02 10 -ep hw3ta03 10" \
+"-ep hw3ta04 28 -ep hw3ta05 39" \
+"-ep hw3ta09 50 -ep hw3ta10 50" \
+"-ep hw3ta04 60 -ep hw3ta06 50" \
+"-ep hw3ta04 60 -ep hw3ta05 100" \
+"-ep hw3ta02 100 -ep hw3ta03 100" \
+"-ep hw3ta07 50 -ep hw3ta08 50" \
+"-ep hw3ta04 100 -ep hw3ta05 100" \
+)
+
+TC_EXPLAIN="-d z -ep hw3ta04 100 -ep hw3ta05 100"
+
+if [ ${PWD##*/} != "code" ]; then 
+    echo -e "\n@@@@@ Script should be put in os20teamXX/NachOS-4.0_MP3/code @@@@@\n"
+    exit 1
+fi
+
+echo -e "\n===== Make nachos =====\n"
+cd build.linux/
+make clean > /dev/null 2>&1
+make > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "\n@@@@@ Nachos build failed @@@@@\n"
+    exit 1
+fi
+cd ..
+
+echo -e "\n===== Copy test cases =====\n"
+cd test
+cat /home/ta/2020/MP3_demo/mp3_make >> Makefile
+cp /home/ta/2020/MP3_demo/*.c .
+make hw3ta01 hw3ta02 hw3ta03 hw3ta04 hw3ta05 hw3ta06 hw3ta07 hw3ta08 hw3ta09 hw3ta10
+
+echo -e "\n===== Start testing =====\n"
+
+for ((i=0; i<${#TC_NORMAL[@]}; i++)); do
+    echo -e "\n===== Test case $(($i+1)): ${TC_NORMAL[$i]} =====\n"
+    ../build.linux/nachos ${TC_NORMAL[$i]}
+done
+
+echo -e "\n===== Test case 9: ${TC_EXPLAIN} =====\n"
+../build.linux/nachos ${TC_EXPLAIN} 2>&1 | less
+
+exit 0
