@@ -28,8 +28,8 @@ int PriorityCompare(Thread *t1, Thread *t2) {
   return t2->getPriority() - t1->getPriority();
 }
 
-int BurstTimeCompare(Thread *t1, Thread *t2) {
-  return t1->getBurstTime() - t2->getBurstTime();
+int PredictedBurstTimeCompare(Thread *t1, Thread *t2) {
+  return t1->getPredictedBurstTime() - t2->getPredictedBurstTime();
 }
 
 //----------------------------------------------------------------------
@@ -39,7 +39,7 @@ int BurstTimeCompare(Thread *t1, Thread *t2) {
 //----------------------------------------------------------------------
 
 Scheduler::Scheduler() {
-  l1Queue = new SortedList<Thread*>(BurstTimeCompare);
+  l1Queue = new SortedList<Thread*>(PredictedBurstTimeCompare);
   l2Queue = new SortedList<Thread*>(PriorityCompare);
   l3Queue = new List<Thread *>;
   toBeDestroyed = NULL;
@@ -104,12 +104,12 @@ Thread* Scheduler::FindNextToRun() {
   }
 
   if (!t && !l2Queue->IsEmpty()) {
-		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L2");
+		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l2Queue->Front()->getID() << "] is removed from queue L2");
     t = l2Queue->RemoveFront();
   }
 
   if (!t && !l3Queue->IsEmpty()) {
-		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L3");
+		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l3Queue->Front()->getID() << "] is removed from queue L3");
     t = l3Queue->RemoveFront();
   }
 

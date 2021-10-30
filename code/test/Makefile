@@ -223,3 +223,52 @@ hw3t3: hw3t3.c start.o
 	$(CC) $(CFLAGS) -c hw3t3.c
 	$(LD) $(LDFLAGS) start.o hw3t3.o -o hw3t3.coff
 	$(COFF2NOFF) hw3t3.coff hw3t3
+hw3ta01: hw3ta01.c start.o
+	$(CC) $(CFLAGS) -c hw3ta01.c
+	$(LD) $(LDFLAGS) start.o hw3ta01.o -o hw3ta01.coff
+	$(COFF2NOFF) hw3ta01.coff hw3ta01
+
+hw3ta02: hw3ta02.c start.o
+	$(CC) $(CFLAGS) -c hw3ta02.c
+	$(LD) $(LDFLAGS) start.o hw3ta02.o -o hw3ta02.coff
+	$(COFF2NOFF) hw3ta02.coff hw3ta02
+
+hw3ta03: hw3ta03.c start.o
+	$(CC) $(CFLAGS) -c hw3ta03.c
+	$(LD) $(LDFLAGS) start.o hw3ta03.o -o hw3ta03.coff
+	$(COFF2NOFF) hw3ta03.coff hw3ta03
+
+hw3ta04: hw3ta04.c start.o
+	$(CC) $(CFLAGS) -c hw3ta04.c
+	$(LD) $(LDFLAGS) start.o hw3ta04.o -o hw3ta04.coff
+	$(COFF2NOFF) hw3ta04.coff hw3ta04
+
+hw3ta05: hw3ta05.c start.o
+	$(CC) $(CFLAGS) -c hw3ta05.c
+	$(LD) $(LDFLAGS) start.o hw3ta05.o -o hw3ta05.coff
+	$(COFF2NOFF) hw3ta05.coff hw3ta05
+
+hw3ta06: hw3ta06.c start.o
+	$(CC) $(CFLAGS) -c hw3ta06.c
+	$(LD) $(LDFLAGS) start.o hw3ta06.o -o hw3ta06.coff
+	$(COFF2NOFF) hw3ta06.coff hw3ta06
+
+hw3ta07: hw3ta07.c start.o
+	$(CC) $(CFLAGS) -c hw3ta07.c
+	$(LD) $(LDFLAGS) start.o hw3ta07.o -o hw3ta07.coff
+	$(COFF2NOFF) hw3ta07.coff hw3ta07
+
+hw3ta08: hw3ta08.c start.o
+	$(CC) $(CFLAGS) -c hw3ta08.c
+	$(LD) $(LDFLAGS) start.o hw3ta08.o -o hw3ta08.coff
+	$(COFF2NOFF) hw3ta08.coff hw3ta08
+
+hw3ta09: hw3ta09.c start.o
+	$(CC) $(CFLAGS) -c hw3ta09.c
+	$(LD) $(LDFLAGS) start.o hw3ta09.o -o hw3ta09.coff
+	$(COFF2NOFF) hw3ta09.coff hw3ta09
+
+hw3ta10: hw3ta10.c start.o
+	$(CC) $(CFLAGS) -c hw3ta10.c
+	$(LD) $(LDFLAGS) start.o hw3ta10.o -o hw3ta10.coff
+	$(COFF2NOFF) hw3ta10.coff hw3ta10
