@@ -47,7 +47,10 @@ void Alarm::CallBack() {
   Interrupt *interrupt = kernel->interrupt;
   MachineStatus status = interrupt->getStatus();
 
-  if (status != IdleMode) {
+  // Increase priority if waiting in ready list more than 1500 ticks
+  kernel->scheduler->AgingProcess();
+
+  if (status != IdleMode && kernel->scheduler->CheckIfYield()) {
     interrupt->YieldOnReturn();
   }
 }

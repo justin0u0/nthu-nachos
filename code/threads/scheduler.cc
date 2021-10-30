@@ -68,7 +68,10 @@ void Scheduler::ReadyToRun(Thread *thread) {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
   DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName());
   //cout << "Putting thread on ready list: " << thread->getName() << endl ;
+
   thread->setStatus(READY);
+
+  thread->setLastAgeTick(kernel->stats->totalTicks);
 
   if (thread->getPriority() < 50) {
     l3Queue->Append(thread);
@@ -90,26 +93,30 @@ void Scheduler::ReadyToRun(Thread *thread) {
 //	Thread is removed from the ready list.
 //----------------------------------------------------------------------
 
-Thread *
-Scheduler::FindNextToRun() {
+Thread* Scheduler::FindNextToRun() {
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
-  if (!l1Queue->IsEmpty()) {
+  Thread* t = NULL;
+
+  if (!t && !l1Queue->IsEmpty()) {
 		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L1");
-    return l1Queue->RemoveFront();
+    t = l1Queue->RemoveFront();
   }
 
-  if (!l2Queue->IsEmpty()) {
+  if (!t && !l2Queue->IsEmpty()) {
 		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L2");
-    return l2Queue->RemoveFront();
+    t = l2Queue->RemoveFront();
   }
 
-  if (!l3Queue->IsEmpty()) {
+  if (!t && !l3Queue->IsEmpty()) {
 		DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << l1Queue->Front()->getID() << "] is removed from queue L3");
-    return l3Queue->RemoveFront();
+    t = l3Queue->RemoveFront();
   }
 
-  return NULL;
+  if (t != NULL) {
+    t->setTotalWaitingTicks(t->getTotalWaitingTicks() + (kernel->stats->totalTicks - t->getLastAgeTick()));
+  }
+  return t;
 }
 
 //----------------------------------------------------------------------
@@ -205,4 +212,119 @@ void Scheduler::CheckToBeDestroyed() {
 void Scheduler::Print() {
   cout << "Ready list contents:\n";
   l3Queue->Apply(ThreadPrint);
+}
+
+//----------------------------------------------------------------------
+// Scheduler::AgingProcess
+// 	Increase priority if thread in ready list over 1500 ticks
+//----------------------------------------------------------------------
+void Scheduler::AgingProcess() {
+  ASSERT(kernel->interrupt->getLevel() == IntOff);
+
+  SortedList<Thread*>* newL2Queue = new SortedList<Thread*>(PriorityCompare);
+  List<Thread*>* newL3Queue = new List<Thread*>;
+
+  ListIterator<Thread*>* it;
+
+  for (it = new ListIterator<Thread*>(l1Queue); !it->IsDone(); it->Next()) {
+    Thread* t = it->Item();
+    t->setTotalWaitingTicks(t->getTotalWaitingTicks() + (kernel->stats->totalTicks - t->getLastAgeTick()));
+    t->setLastAgeTick(kernel->stats->totalTicks);
+
+    if (t->getTotalWaitingTicks() >= 1500) {
+      int newPriority = t->getPriority() + 10;
+      if (newPriority >= 150) newPriority = 149;
+
+      DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+          << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << newPriority << "]");
+      t->setPriority(newPriority);
+      t->setTotalWaitingTicks(t->getTotalWaitingTicks() - 1500);
+    }
+  }
+  delete it;
+
+  for (it = new ListIterator<Thread*>(l2Queue); !it->IsDone(); it->Next()) {
+    Thread* t = it->Item();
+    t->setTotalWaitingTicks(t->getTotalWaitingTicks() + (kernel->stats->totalTicks - t->getLastAgeTick()));
+    t->setLastAgeTick(kernel->stats->totalTicks);
+
+    if (t->getTotalWaitingTicks() >= 1500) {
+      int newPriority = t->getPriority() + 10;
+
+      DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+          << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << newPriority << "]");
+
+      t->setPriority(newPriority);
+
+      if (t->getPriority() >= 100) {
+        l1Queue->Insert(t);
+        DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is removed from queue L2");
+        DEBUG(dbgScheduler, "[A] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is inserted into queue L1");
+      } else {
+        newL2Queue->Insert(t);
+      }
+
+      t->setTotalWaitingTicks(t->getTotalWaitingTicks() - 1500);
+    } else {
+      newL2Queue->Insert(t);
+    }
+  }
+  delete it;
+
+  for (it = new ListIterator<Thread*>(l3Queue); !it->IsDone(); it->Next()) {
+    Thread* t = it->Item();
+    t->setTotalWaitingTicks(t->getTotalWaitingTicks() + (kernel->stats->totalTicks - t->getLastAgeTick()));
+    t->setLastAgeTick(kernel->stats->totalTicks);
+
+    if (t->getTotalWaitingTicks() >= 1500) {
+      int newPriority = t->getPriority() + 10;
+
+      DEBUG(dbgScheduler, "[C] Tick [" << kernel->stats->totalTicks << "]: Thread [" 
+          << t->getID() << "] chagnes its priority from [" << t->getPriority() << "] to [" << newPriority << "]");
+
+      t->setPriority(newPriority);
+
+      if (t->getPriority() >= 50) {
+        newL2Queue->Insert(t);
+        DEBUG(dbgScheduler, "[B] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is removed from queue L3");
+        DEBUG(dbgScheduler, "[A] Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is inserted into queue L2");
+      } else {
+        newL3Queue->Append(t);
+      }
+
+      t->setTotalWaitingTicks(t->getTotalWaitingTicks() - 1500);
+    } else {
+      newL3Queue->Append(t);
+    }
+  }
+  delete it;
+
+  delete l2Queue;
+  l2Queue = newL2Queue;
+  delete l3Queue;
+  l3Queue = newL3Queue;
+}
+
+//----------------------------------------------------------------------
+// Scheduler::CheckIfYield
+// 	Return true if currentThread should be preempt
+//----------------------------------------------------------------------
+bool Scheduler::CheckIfYield() {
+  ASSERT(kernel->interrupt->getLevel() == IntOff);
+
+  Thread *t = kernel->currentThread;
+
+  // Switch next thread if current thread is l2, l3, or current thread is L1 but longer burst time
+  if (!l1Queue->IsEmpty()) {
+    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getBurstTime() > l1Queue->Front()->getBurstTime()));
+  }
+
+  // Switch next thread if current thread is L3
+  if (!l2Queue->IsEmpty()) {
+    return (t->getPriority() < 50);
+  }
+
+  // Scheduler::CheckIfYield is called in Alarm::Callback and L3 is RR algorithm,
+  // if currentThread is L3 and L3 is not empty, switch
+  return (t->getPriority() < 50 && !l3Queue->IsEmpty());
 }

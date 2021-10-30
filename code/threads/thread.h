@@ -140,6 +140,22 @@ class Thread {
     this->startTick = startTick;
   }
 
+  int getLastAgeTick() {
+    return lastAgeTick;
+  }
+
+  void setLastAgeTick(int lastAgeTick) {
+    this->lastAgeTick = lastAgeTick;
+  }
+
+  int getTotalWaitingTicks() {
+    return totalWaitingTicks;
+  }
+
+  void setTotalWaitingTicks(int totalWaitingTicks) {
+    this->totalWaitingTicks = totalWaitingTicks;
+  }
+
  private:
   // some of the private data for this class is listed above
 
@@ -159,10 +175,12 @@ class Thread {
 
   int userRegisters[NumTotalRegs];  // user-level CPU register state
 
-  double predictedBurstTime;
-  int burstTime;
-  int startTick;
-  int priority;
+  int burstTime;              // The accumulated burst time, which is also the total time in running state
+  int startTick;              // The timestamp when the thread back to running state
+  double predictedBurstTime;  // The predicted burst time
+  int lastAgeTick;            // The tick when totalWaitingTick update, or thread just go into ready list
+  int totalWaitingTicks;      // The total ticks thread in the ready list
+  int priority;               // The priority of the thread, 0 ~ 149
 
  public:
   void SaveUserState();     // save user-level register state
