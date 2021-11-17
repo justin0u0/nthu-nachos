@@ -236,7 +236,7 @@ void Thread::Sleep(bool finishing) {
   ASSERT(this == kernel->currentThread);
   ASSERT(kernel->interrupt->getLevel() == IntOff);
 
-  DEBUG(dbgThread, "Sleeping thread: " << name);
+  DEBUG(dbgThread, "Sleeping thread: " << name << ", finishing " << finishing);
   DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
 
   status = BLOCKED;
