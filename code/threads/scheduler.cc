@@ -318,7 +318,13 @@ bool Scheduler::CheckIfYield() {
 
   // Switch next thread if current thread is l2, l3, or current thread is L1 but longer burst time
   if (!l1Queue->IsEmpty()) {
-    return (t->getPriority() < 100 || (t->getPriority() >= 100 && t->getPredictedBurstTime() > l1Queue->Front()->getPredictedBurstTime()));
+    // calculate the current thread's remaining burst time
+    int remainingBurstTime = t->getPredictedBurstTime() - (kernel->stats->totalTicks - t->getStartTick());
+    if (remainingBurstTime < 0) {
+      remainingBurstTime = 0;
+    }
+
+    return (t->getPriority() < 100 || (t->getPriority() >= 100 && remainingBurstTime > l1Queue->Front()->getPredictedBurstTime()));
   }
 
   // Switch next thread if current thread is L3
