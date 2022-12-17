@@ -156,6 +156,9 @@ class Thread {
     this->totalWaitingTicks = totalWaitingTicks;
   }
 
+  double getPredictedRemainingBurstTime() {
+    return predictedBurstTime - burstTime;
+  }
  private:
   // some of the private data for this class is listed above
 

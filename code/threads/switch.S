@@ -335,9 +335,8 @@ ThreadRoot:
 ** a pointer to t1, this decrements esp by 4, so when we use it
 ** to reference stuff on the stack, we add 4 to the offset.
 */
-        .comm   _eax_save,4
-
-        .globl  SWITCH
+	.comm   _eax_save,4
+	.globl  SWITCH
 	.globl  _SWITCH
 _SWITCH:		
 SWITCH:

@@ -28,8 +28,8 @@ int PriorityCompare(Thread *t1, Thread *t2) {
   return t2->getPriority() - t1->getPriority();
 }
 
-int PredictedBurstTimeCompare(Thread *t1, Thread *t2) {
-  return t1->getPredictedBurstTime() - t2->getPredictedBurstTime();
+int PredictedRemainingBurstTimeCompare(Thread *t1, Thread *t2) {
+  return t1->getPredictedRemainingBurstTime() - t2->getPredictedRemainingBurstTime();
 }
 
 //----------------------------------------------------------------------
@@ -39,7 +39,7 @@ int PredictedBurstTimeCompare(Thread *t1, Thread *t2) {
 //----------------------------------------------------------------------
 
 Scheduler::Scheduler() {
-  l1Queue = new SortedList<Thread*>(PredictedBurstTimeCompare);
+  l1Queue = new SortedList<Thread*>(PredictedRemainingBurstTimeCompare);
   l2Queue = new SortedList<Thread*>(PriorityCompare);
   l3Queue = new List<Thread *>;
   toBeDestroyed = NULL;
@@ -160,7 +160,7 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
   DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
 	DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID()
     << "] is now selected for execution, thread [" << oldThread->getID() << "] is replaced, and it has executed ["
-    << kernel->stats->totalTicks - oldThread->getStartTick() << "] ticks");
+    << oldThread->getBurstTime() + (kernel->stats->totalTicks - oldThread->getStartTick()) << "] ticks");
 
   // This is a machine-dependent assembly language routine defined
   // in switch.s.  You may have to think
@@ -318,13 +318,11 @@ bool Scheduler::CheckIfYield() {
 
   // Switch next thread if current thread is l2, l3, or current thread is L1 but longer burst time
   if (!l1Queue->IsEmpty()) {
-    // calculate the current thread's remaining burst time
-    int remainingBurstTime = t->getPredictedBurstTime() - (kernel->stats->totalTicks - t->getStartTick());
-    if (remainingBurstTime < 0) {
-      remainingBurstTime = 0;
-    }
+    // calculate the current thread's predicted remaining burst time
+    int predictedRemainingBurstTime = t->getPredictedBurstTime() - (kernel->stats->totalTicks - t->getStartTick());
 
-    return (t->getPriority() < 100 || (t->getPriority() >= 100 && remainingBurstTime > l1Queue->Front()->getPredictedBurstTime()));
+    return (t->getPriority() < 100
+      || (t->getPriority() >= 100 && predictedRemainingBurstTime > l1Queue->Front()->getPredictedRemainingBurstTime()));
   }
 
   // Switch next thread if current thread is L3
