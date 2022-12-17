@@ -160,7 +160,7 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
   DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
 	DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID()
     << "] is now selected for execution, thread [" << oldThread->getID() << "] is replaced, and it has executed ["
-    << oldThread->getBurstTime() + (kernel->stats->totalTicks - oldThread->getStartTick()) << "] ticks");
+    << oldThread->getBurstTime() << "] ticks");
 
   // This is a machine-dependent assembly language routine defined
   // in switch.s.  You may have to think
