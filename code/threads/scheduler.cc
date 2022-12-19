@@ -114,7 +114,8 @@ Thread* Scheduler::FindNextToRun() {
   }
 
   if (t != NULL) {
-    t->setTotalWaitingTicks(t->getTotalWaitingTicks() + (kernel->stats->totalTicks - t->getLastAgeTick()));
+    // reset waiting ticks since the thread is going to be run
+    t->setTotalWaitingTicks(0);
   }
   return t;
 }
@@ -158,9 +159,14 @@ void Scheduler::Run(Thread *nextThread, bool finishing) {
   nextThread->setStatus(RUNNING);      // nextThread is now running
 
   DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
+
+  int accumulatedBurstTime = oldThread->getBurstTime(); // Thread::Yield
+  if (accumulatedBurstTime == 0) {
+    accumulatedBurstTime = kernel->stats->totalTicks - oldThread->getStartTick(); // Thread::Sleep
+  }
 	DEBUG(dbgScheduler, "[E] Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID()
     << "] is now selected for execution, thread [" << oldThread->getID() << "] is replaced, and it has executed ["
-    << oldThread->getBurstTime() << "] ticks");
+    << accumulatedBurstTime << "] ticks");
 
   // This is a machine-dependent assembly language routine defined
   // in switch.s.  You may have to think
